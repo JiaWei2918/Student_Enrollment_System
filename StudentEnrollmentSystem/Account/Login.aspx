@@ -16,6 +16,7 @@
 
             <asp:Button ID="btnLogin" runat="server" Text="Login" OnClick="btnLogin_Click" CssClass="btn btn-primary" />
 
+            <asp:HyperLink ID="lnkForgot" runat="server" NavigateUrl="~/Account/ForgotPassword.aspx">Forgot Password?</asp:HyperLink>
             <asp:Label ID="lblMessage" runat="server" ForeColor="Red" Font-Bold="true"></asp:Label>
         </div>
     </form>
