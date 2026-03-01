@@ -132,6 +132,7 @@
     <Content Include="Database\v1_05_CreateEnrollmentTables.sql" />
     <Content Include="Database\v1_06_CreateFinanceTables.sql" />
     <Content Include="Database\v1_07_CreateSupportingTables.sql" />
+    <Content Include="Database\v1_08_CreateResetPasswordProcedures.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
