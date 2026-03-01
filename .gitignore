@@ -1,0 +1,14 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+
+# SQL Server
+*.mdf
+*.ldf
+*.vsidx
+
+# Logs
+*.log
