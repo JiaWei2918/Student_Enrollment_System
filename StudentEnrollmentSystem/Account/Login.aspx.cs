@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -15,6 +17,22 @@ namespace StudentEnrollmentSystem.Account
     public partial class Login : System.Web.UI.Page
     {
         string connStr = ConfigurationManager.ConnectionStrings["DBConnection"].ConnectionString;
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+
+                return builder.ToString();
+            }
+        }
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
@@ -27,8 +45,8 @@ namespace StudentEnrollmentSystem.Account
 
                 Debug.WriteLine("Username Entered: " + username);
 
-                //string hashedPassword = PasswordHelper.HashPassword(password);
-                //Debug.WriteLine("Hashed Password: " + hashedPassword);
+                string hashedPassword = HashPassword(password);
+                Debug.WriteLine("Hashed Password: " + hashedPassword);
 
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
@@ -40,7 +58,7 @@ namespace StudentEnrollmentSystem.Account
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@Username", username);
-                        cmd.Parameters.AddWithValue("@PasswordHash", password);
+                        cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                         Debug.WriteLine("Executing Stored Procedure...");
 
