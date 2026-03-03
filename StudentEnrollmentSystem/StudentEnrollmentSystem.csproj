@@ -104,6 +104,8 @@
     <Content Include="Account\Login.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
     <Content Include="Admin\ManageCourse.aspx" />
+    <Content Include="Admin\ManageCourseOffering.aspx" />
+    <Content Include="Admin\ManageSemester.aspx" />
     <Content Include="Admin\ManageStudent.aspx" />
     <Content Include="Admin\Report.aspx" />
     <Content Include="Contact.aspx" />
@@ -133,6 +135,10 @@
     <Content Include="Database\v1_06_CreateFinanceTables.sql" />
     <Content Include="Database\v1_07_CreateSupportingTables.sql" />
     <Content Include="Database\v1_08_CreateResetPasswordProcedures.sql" />
+    <Content Include="Database\v2_01_AddSemesterRule.sql" />
+    <Content Include="Database\v2_02_CreateSemesterProcedures.sql" />
+    <Content Include="Database\v2_03_CreateCourseProcedure.sql" />
+    <Content Include="Database\v2_04_CreateCourseOffering.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -232,6 +238,20 @@
     </Compile>
     <Compile Include="Admin\ManageCourse.aspx.designer.cs">
       <DependentUpon>ManageCourse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ManageCourseOffering.aspx.cs">
+      <DependentUpon>ManageCourseOffering.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ManageCourseOffering.aspx.designer.cs">
+      <DependentUpon>ManageCourseOffering.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ManageSemester.aspx.cs">
+      <DependentUpon>ManageSemester.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ManageSemester.aspx.designer.cs">
+      <DependentUpon>ManageSemester.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\ManageStudent.aspx.cs">
       <DependentUpon>ManageStudent.aspx</DependentUpon>

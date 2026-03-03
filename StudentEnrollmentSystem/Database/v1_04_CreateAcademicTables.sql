@@ -41,8 +41,8 @@ BEGIN
             CourseID INT NOT NULL,
             SemesterID INT NOT NULL,
             Lecturer VARCHAR(100),
-            Capacity INT NOT NULL,
-            AvailableSeats INT NOT NULL,
+            Capacity INT NOT NULL CHECK (Capacity > 0),
+            AvailableSeats INT NOT NULL CHECK (AvailableSeats BETWEEN 0 AND Capacity),
             Status VARCHAR(20) CHECK (Status IN ('Open', 'Full', 'Cancelled')) DEFAULT 'Open',
 
             FOREIGN KEY (CourseID) REFERENCES Course(CourseID),
