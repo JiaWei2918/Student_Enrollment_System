@@ -9,7 +9,8 @@ CREATE OR ALTER PROCEDURE sp_AddStudent
     @Phone VARCHAR(20),
     @Program VARCHAR(50),
     @Section VARCHAR(10),
-    @EnrollmentDate DATE
+    @EnrollmentDate DATE,
+    @PasswordHash VARCHAR(256)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -47,7 +48,7 @@ BEGIN
     VALUES
     (
         @MatricNo,
-        @MatricNo,
+        @PasswordHash,
         'Student'
     );
 

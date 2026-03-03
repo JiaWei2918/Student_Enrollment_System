@@ -4,6 +4,8 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -35,23 +37,41 @@ namespace StudentEnrollmentSystem.Admin
             }
         }
 
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                    builder.Append(b.ToString("x2"));
+
+                return builder.ToString();
+            }
+        }
+
         protected void btnAdd_Click(object sender, EventArgs e)
         {
             lblMessage.Text = "";
             lblMessage.ForeColor = System.Drawing.Color.Red;
+
+            string matricNo = txtMatricNo.Text.Trim();
+            string hashedPassword = HashPassword(matricNo);
 
             using (SqlConnection conn = new SqlConnection(connStr))
             using (SqlCommand cmd = new SqlCommand("sp_AddStudent", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@MatricNo", txtMatricNo.Text.Trim());
+                cmd.Parameters.AddWithValue("@MatricNo", matricNo);
                 cmd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
                 cmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
                 cmd.Parameters.AddWithValue("@Phone", txtPhone.Text.Trim());
                 cmd.Parameters.AddWithValue("@Program", txtProgram.Text.Trim());
                 cmd.Parameters.AddWithValue("@Section", txtSection.Text.Trim());
                 cmd.Parameters.AddWithValue("@EnrollmentDate", Convert.ToDateTime(txtEnrollmentDate.Text));
+                cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                 conn.Open();
                 object obj = cmd.ExecuteScalar();
