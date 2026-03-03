@@ -53,6 +53,11 @@
             Manage Course Offering
         </asp:HyperLink><br /><br />
 
+         <asp:HyperLink ID="lnkStudent" runat="server"
+             NavigateUrl="~/Admin/ManageStudent.aspx">
+             Manage Students
+         </asp:HyperLink><br /><br />
+
         <asp:Button ID="btnLogout" runat="server"
             Text="Logout"
             OnClick="btnLogout_Click" />
