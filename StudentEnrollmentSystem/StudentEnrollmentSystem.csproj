@@ -139,6 +139,7 @@
     <Content Include="Database\v2_02_CreateSemesterProcedures.sql" />
     <Content Include="Database\v2_03_CreateCourseProcedure.sql" />
     <Content Include="Database\v2_04_CreateCourseOffering.sql" />
+    <Content Include="Database\v2_05_CreateStudents.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
