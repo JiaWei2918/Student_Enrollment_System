@@ -1,0 +1,112 @@
+====================================================
+STUDENT ENROLLMENT SYSTEM 
+DATABASE & PROJECT SETUP GUIDE
+====================================================
+
+========================================
+1. DATABASE SETUP
+========================================
+
+IMPORTANT (Jovi please take note):
+
+Please DELETE the "\SQLEXPRESS" in the Web.config connection string.
+Otherwise, you will NOT be able to access the database.
+
+Example (For your Case Only):
+
+WRONG:
+Data Source=.\SQLEXPRESS;
+
+CORRECT:
+Data Source=.;
+
+
+========================================
+STEP 1: EXECUTE ALL SQL SCRIPTS
+========================================
+
+1. Open SQL Server Management Studio (SSMS).
+2. File -> Open -> File
+2. Execute ALL SQL scripts provided in the project.
+
+VERY IMPORTANT:
+- Please follow the NUMBER ORDER of the SQL scripts.
+- If you execute in the wrong order, it may cause errors.
+- Each SQL script can ONLY be executed ONE TIME.
+- Do NOT re-run old scripts.
+
+If you need to:
+- Modify table structure
+- Edit stored procedure
+- Delete or update logic
+
+You MUST create a NEW SQL script file.
+Do NOT modify and re-run old script files.
+
+
+========================================
+DATABASE VERSION TRACKING
+========================================
+
+We are using DatabaseVersion tracking.
+
+- Every SQL script execution will be recorded in the table:
+  DatabaseVersion
+- If you run the same script again,
+  it may cause duplicate or version conflict errors.
+
+So please be careful when executing scripts.
+
+========================================
+STORED PROCEDURES
+========================================
+
+All system features use STORED PROCEDURES.
+
+Examples:
+- Add Student
+- Update Student
+- Delete Student
+- Login
+- Course Offering
+- Enrollment
+
+IMPORTANT:
+Do NOT write direct SQL queries in C# unless necessary.
+Always call stored procedures.
+
+
+========================================
+STEP 2: AFTER DATABASE SETUP
+========================================
+
+After you:
+
+- Successfully execute all SQL scripts
+- Confirm all tables are created
+- Confirm all stored procedures are created
+- Confirm database connection is working
+
+Then you can start coding.
+
+Before running the system:
+
+1. Check Web.config connection string
+2. Make sure database name is:
+   StudentEnrollmentSystem
+3. Make sure admin account exists
+4. Test login first
+
+
+========================================
+FINAL REMINDERS
+========================================
+
+- Do NOT re-execute old SQL scripts.
+- Always follow script number order.
+- Create new script for any modification.
+- Check database connection before debugging.
+
+========================================
+END OF SETUP GUIDE
+========================================
