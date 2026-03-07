@@ -51,7 +51,22 @@ BEGIN
                 LastLogin = GETDATE()
             WHERE UserID = @UserID
 
-            SELECT ''SUCCESS'' AS Result, @Role AS Role
+            DECLARE @FullName VARCHAR(100);
+
+            IF @Role = ''Student''
+            BEGIN
+                SELECT @FullName = FullName
+                FROM Student
+                WHERE UserID = @UserID;
+            END
+            ELSE IF @Role = ''Admin''
+            BEGIN
+                SELECT @FullName = FullName
+                FROM Admin
+                WHERE UserID = @UserID;
+            END
+
+            SELECT ''SUCCESS'' AS Result, @UserID AS UserID, @Role AS Role, @FullName AS FullName;
         END
         ELSE
         BEGIN

@@ -73,9 +73,13 @@ namespace StudentEnrollmentSystem.Account
                                 {
                                     case "SUCCESS":
                                         string role = reader["Role"].ToString();
+                                        string userID = reader["UserID"].ToString();
+                                        string fullName = reader["FullName"].ToString();
                                         Debug.WriteLine("Login SUCCESS. Role: " + role);
 
+                                        Session["UserID"] = userID;
                                         Session["Username"] = username;
+                                        Session["FullName"] = fullName;
                                         Session["Role"] = role;
 
                                         Debug.WriteLine("Session Created.");
@@ -83,13 +87,14 @@ namespace StudentEnrollmentSystem.Account
                                         if (role == "Admin")
                                         {
                                             Debug.WriteLine("Redirecting to Admin Dashboard");
-                                            Response.Redirect("~/Admin/Dashboard.aspx");
+                                            Response.Redirect("~/Admin/Dashboard.aspx", false);
                                         }
                                         else
                                         {
                                             Debug.WriteLine("Redirecting to Student Dashboard");
-                                            Response.Redirect("~/Student/Dashboard.aspx");
+                                            Response.Redirect("~/Student/Dashboard.aspx", false);
                                         }
+                                        Context.ApplicationInstance.CompleteRequest();
                                         break;
 
                                     case "LOCKED":
