@@ -18,16 +18,38 @@ namespace StudentEnrollmentSystem.Admin
         {
             Debug.WriteLine("=== ADMIN DASHBOARD LOAD ===");
 
-            if (Session["Role"] == null || Session["Role"].ToString() != "Admin")
+            if (Session["UserID"] == null || Session["Role"] == null)
+            {
+                Debug.WriteLine("Session expired or user not logged in.");
+                Response.Redirect("~/Account/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
+            if (Session["Role"].ToString() != "Admin")
             {
                 Debug.WriteLine("Unauthorized access attempt.");
-                Response.Redirect("~/Account/Login.aspx");
+                Response.Redirect("~/Account/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
             }
 
             if (!IsPostBack)
             {
-                lblWelcome.Text = "Welcome, " + Session["Username"];
+                LoadAdminInfo();
                 LoadStatistics();
+            }
+        }
+
+        private void LoadAdminInfo()
+        {
+            if (Session["FullName"] != null)
+            {
+                lblWelcome.Text = "Welcome, " + Session["FullName"].ToString();
+            }
+            else
+            {
+                lblWelcome.Text = "Welcome, " + Session["Username"].ToString();
             }
         }
 
@@ -66,7 +88,8 @@ namespace StudentEnrollmentSystem.Admin
             Session.Clear();
             Session.Abandon();
 
-            Response.Redirect("~/Account/Login.aspx");
+            Response.Redirect("~/Account/Login.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }

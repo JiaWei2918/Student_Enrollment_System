@@ -11,10 +11,49 @@ namespace StudentEnrollmentSystem.Student
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["Role"] == null || Session["Role"].ToString() != "Student")
+
+            // Prevent unauthorized access
+            if (Session["UserID"] == null || Session["Role"] == null)
             {
-                Response.Redirect("~/Account/Login.aspx");
+                Response.Redirect("~/Account/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
             }
+
+            // Only Student role allowed
+            if (Session["Role"].ToString() != "Student")
+            {
+                Response.Redirect("~/Account/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
+            if (!IsPostBack)
+            {
+                LoadStudentInfo();
+            }
+
+        }
+
+        private void LoadStudentInfo()
+        {
+            if (Session["FullName"] != null)
+            {
+                lblStudentName.Text = Session["FullName"].ToString();
+            }
+            else
+            {
+                lblStudentName.Text = Session["Username"].ToString();
+            }
+        }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            Session.Clear();
+            Session.Abandon();
+
+            Response.Redirect("~/Account/Login.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }
