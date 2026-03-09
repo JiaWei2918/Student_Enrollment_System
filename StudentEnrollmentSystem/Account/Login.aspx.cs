@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Antlr.Runtime.Tree;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -75,12 +76,14 @@ namespace StudentEnrollmentSystem.Account
                                         string role = reader["Role"].ToString();
                                         string userID = reader["UserID"].ToString();
                                         string fullName = reader["FullName"].ToString();
+                                        string studentID = reader["StudentID"].ToString();
                                         Debug.WriteLine("Login SUCCESS. Role: " + role);
 
                                         Session["UserID"] = userID;
                                         Session["Username"] = username;
                                         Session["FullName"] = fullName;
                                         Session["Role"] = role;
+                                        Session["StudentID"] = studentID;
 
                                         Debug.WriteLine("Session Created.");
 

@@ -51,22 +51,22 @@ BEGIN
                 LastLogin = GETDATE()
             WHERE UserID = @UserID
 
-            DECLARE @FullName VARCHAR(100);
+            DECLARE @FullName VARCHAR(100), @StudentID INT;
 
             IF @Role = ''Student''
             BEGIN
-                SELECT @FullName = FullName
+                SELECT @FullName = FullName, @StudentID = StudentID
                 FROM Student
                 WHERE UserID = @UserID;
             END
             ELSE IF @Role = ''Admin''
             BEGIN
                 SELECT @FullName = FullName
-                FROM Admin
+                FROM Administrator
                 WHERE UserID = @UserID;
             END
 
-            SELECT ''SUCCESS'' AS Result, @UserID AS UserID, @Role AS Role, @FullName AS FullName;
+            SELECT ''SUCCESS'' AS Result, @UserID AS UserID, @Role AS Role, @FullName AS FullName, @StudentID AS StudentID;
         END
         ELSE
         BEGIN

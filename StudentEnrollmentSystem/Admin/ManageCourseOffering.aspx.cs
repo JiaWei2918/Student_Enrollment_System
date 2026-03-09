@@ -116,20 +116,48 @@ namespace StudentEnrollmentSystem.Admin
             int id = Convert.ToInt32(gvOffering.DataKeys[e.RowIndex].Value);
             GridViewRow row = gvOffering.Rows[e.RowIndex];
 
+            string lecturer = ((TextBox)row.FindControl("txtEditLecturer")).Text.Trim();
+            string capacityText = ((TextBox)row.FindControl("txtEditCapacity")).Text.Trim();
+
+            int capacity;
+
+            if (!int.TryParse(capacityText, out capacity))
+            {
+                lblMessage.ForeColor = System.Drawing.Color.Red;
+                lblMessage.Text = "Capacity must be a valid number.";
+                return;
+            }
+
             using (SqlConnection conn = new SqlConnection(connStr))
             using (SqlCommand cmd = new SqlCommand("sp_UpdateCourseOffering", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@OfferingID", id);
-                cmd.Parameters.AddWithValue("@Lecturer", ((TextBox)row.FindControl("txtEditLecturer")).Text);
-                cmd.Parameters.AddWithValue("@Capacity", Convert.ToInt32(((TextBox)row.FindControl("txtEditCapacity")).Text));
+                cmd.Parameters.Add("@OfferingID", SqlDbType.Int).Value = id;
+                cmd.Parameters.Add("@Lecturer", SqlDbType.VarChar, 100).Value = lecturer;
+                cmd.Parameters.Add("@Capacity", SqlDbType.Int).Value = capacity;
 
                 conn.Open();
-                cmd.ExecuteScalar();
-            }
+                string result = cmd.ExecuteScalar().ToString();
 
-            gvOffering.EditIndex = -1;
-            LoadOfferings();
+                if (result == "CAPACITY_TOO_SMALL")
+                {
+                    lblMessage.ForeColor = System.Drawing.Color.Red;
+                    lblMessage.Text = "Capacity cannot be smaller than enrolled students.";
+                }
+                else if (result == "SUCCESS")
+                {
+                    lblMessage.ForeColor = System.Drawing.Color.Green;
+                    lblMessage.Text = "Course offering updated successfully.";
+
+                    gvOffering.EditIndex = -1;
+                    LoadOfferings();
+                }
+                else
+                {
+                    lblMessage.ForeColor = System.Drawing.Color.Red;
+                    lblMessage.Text = "Update failed.";
+                }
+            }
         }
 
         protected void gvOffering_RowDeleting(object sender, GridViewDeleteEventArgs e)

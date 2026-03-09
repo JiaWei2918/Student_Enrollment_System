@@ -47,7 +47,6 @@ BEGIN
         @Lecturer,
         @Capacity,
         @Capacity,
-        @Status, 
         'Open'
     )
 
@@ -84,13 +83,23 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    DECLARE @Enrolled INT
+
+    SELECT @Enrolled = Capacity - AvailableSeats
+    FROM CourseOffering
+    WHERE OfferingID = @OfferingID
+
+    IF @Capacity < @Enrolled
+    BEGIN
+        SELECT 'CAPACITY_TOO_SMALL'
+        RETURN
+    END
+
     UPDATE CourseOffering
-    SET Lecturer = @Lecturer,
-        AvailableSeats = CASE 
-                             WHEN @Capacity - (Capacity - AvailableSeats) < 0 THEN 0
-                             ELSE @Capacity - (Capacity - AvailableSeats)
-                         END,
-        Capacity = @Capacity
+    SET
+        Lecturer = @Lecturer,
+        Capacity = @Capacity,
+        AvailableSeats = @Capacity - @Enrolled
     WHERE OfferingID = @OfferingID
 
     SELECT 'SUCCESS'
@@ -102,6 +111,18 @@ CREATE OR ALTER PROCEDURE sp_DeleteCourseOffering
     @OfferingID INT
 AS
 BEGIN
+    IF EXISTS
+    (
+        SELECT 1
+        FROM Enrollment
+        WHERE OfferingID = @OfferingID
+        AND Status = 'Enrolled'
+    )
+    BEGIN
+        SELECT 'HAS_ENROLLMENTS'
+        RETURN
+    END
+
     DELETE FROM CourseOffering
     WHERE OfferingID = @OfferingID
 
@@ -122,6 +143,7 @@ BEGIN
         co.Lecturer,
         co.Capacity,
         co.AvailableSeats,
+        (co.Capacity - co.AvailableSeats) AS EnrolledStudents,
         co.Status
     FROM CourseOffering co
     INNER JOIN Course c ON co.CourseID = c.CourseID

@@ -76,17 +76,17 @@
             <div class="menu-grid">
                 <!-- Enrollment -->
                 <div class="card">
-                    <a href="Enrollment/CourseEnrollment.aspx">Online Enrollment</a>
+                    <a href="Enrollment.aspx">Online Enrollment</a>
                     <p>Register courses for current semester.</p>
                 </div>
 
                 <div class="card">
-                    <a href="Enrollment/AddDrop.aspx">Course Add / Drop</a>
+                    <a href="AddDrop.aspx">Course Add / Drop</a>
                     <p>Add or drop courses during add/drop period.</p>
                 </div>
 
                 <div class="card">
-                    <a href="Enrollment/AddDropHistory.aspx">Add / Drop History</a>
+                    <a href="AddDropHistory.aspx">Add / Drop History</a>
                     <p>View history of course changes.</p>
                 </div>
 
@@ -110,7 +110,7 @@
 
                 <!-- Statement -->
                 <div class="card">
-                    <a href="Statement/StudentStatement.aspx">Student Statement</a>
+                    <a href="Statement.aspx">Student Statement</a>
                     <p>View academic and financial statement.</p>
                 </div>
 
@@ -122,7 +122,7 @@
 
                 <!-- Payment -->
                 <div class="card">
-                    <a href="Payment/Payment.aspx">Payment</a>
+                    <a href="Payment.aspx">Payment</a>
                     <p>Make payment for invoices.</p>
                 </div>
 
