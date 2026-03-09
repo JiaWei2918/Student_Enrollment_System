@@ -140,6 +140,8 @@
     <Content Include="Database\v2_03_CreateCourseProcedure.sql" />
     <Content Include="Database\v2_04_CreateCourseOffering.sql" />
     <Content Include="Database\v2_05_CreateStudents.sql" />
+    <Content Include="Database\v3_01_CreateEnrollmentProcedure.sql" />
+    <Content Include="Database\v3_02_CreateAddDropProcedure.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -201,6 +203,7 @@
     <Content Include="Site.Master" />
     <Content Include="Student\AccountSettings.aspx" />
     <Content Include="Student\AddDrop.aspx" />
+    <Content Include="Student\AddDropHistory.aspx" />
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Enquiry.aspx" />
     <Content Include="Student\Enrollment.aspx" />
@@ -322,6 +325,13 @@
     </Compile>
     <Compile Include="Student\AddDrop.aspx.designer.cs">
       <DependentUpon>AddDrop.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\AddDropHistory.aspx.cs">
+      <DependentUpon>AddDropHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\AddDropHistory.aspx.designer.cs">
+      <DependentUpon>AddDropHistory.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
