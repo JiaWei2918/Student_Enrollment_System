@@ -1,17 +1,10 @@
-﻿using Antlr.Runtime.Tree;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
 
 namespace StudentEnrollmentSystem.Account
 {
@@ -37,106 +30,126 @@ namespace StudentEnrollmentSystem.Account
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-            Debug.WriteLine("===== LOGIN ATTEMPT START =====");
+            txtUsername.Enabled = true;
+            txtPassword.Enabled = true;
+            btnLogin.Enabled = true;
+
+            lblMessage.Text = "";
+
+            string username = txtUsername.Text.Trim();
+            string password = txtPassword.Text;
+
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                lblMessage.Text = "Please enter username and password.";
+                return;
+            }
+
+            string hashedPassword = HashPassword(password);
+            Debug.WriteLine("Hashed Password: " + hashedPassword);
 
             try
             {
-                string username = txtUsername.Text.Trim();
-                string password = txtPassword.Text.Trim();
-
-                Debug.WriteLine("Username Entered: " + username);
-
-                string hashedPassword = HashPassword(password);
-                Debug.WriteLine("Hashed Password: " + hashedPassword);
-
                 using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_LoginUser", conn))
                 {
-                    Debug.WriteLine("Opening SQL Connection...");
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("@Username", SqlDbType.VarChar, 50).Value = username;
+                    cmd.Parameters.Add("@PasswordHash", SqlDbType.VarChar, 255).Value = hashedPassword;
+
                     conn.Open();
-                    Debug.WriteLine("Opening SQL Connection...");
 
-                    using (SqlCommand cmd = new SqlCommand("sp_LoginUser", conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@Username", username);
-                        cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
-
-                        Debug.WriteLine("Executing Stored Procedure...");
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        if (reader.Read())
                         {
-                            if (reader.Read())
+                            string result = reader["Result"].ToString();
+
+                            if (result == "SUCCESS")
                             {
-                                string result = reader["Result"].ToString();
-                                Debug.WriteLine("Stored Procedure Result: " + result);
+                                string role = reader["Role"].ToString();
+                                int userID = Convert.ToInt32(reader["UserID"]);
+                                string fullName = reader["FullName"].ToString();
+                                object studentID = reader["StudentID"];
 
-                                switch (result)
-                                {
-                                    case "SUCCESS":
-                                        string role = reader["Role"].ToString();
-                                        string userID = reader["UserID"].ToString();
-                                        string fullName = reader["FullName"].ToString();
-                                        string studentID = reader["StudentID"].ToString();
-                                        Debug.WriteLine("Login SUCCESS. Role: " + role);
+                                Session["UserID"] = userID;
+                                Session["Username"] = username;
+                                Session["FullName"] = fullName;
+                                Session["Role"] = role;
 
-                                        Session["UserID"] = userID;
-                                        Session["Username"] = username;
-                                        Session["FullName"] = fullName;
-                                        Session["Role"] = role;
-                                        Session["StudentID"] = studentID;
+                                if (studentID != DBNull.Value)
+                                    Session["StudentID"] = studentID;
 
-                                        Debug.WriteLine("Session Created.");
+                                Session.Timeout = 30;
 
-                                        if (role == "Admin")
-                                        {
-                                            Debug.WriteLine("Redirecting to Admin Dashboard");
-                                            Response.Redirect("~/Admin/Dashboard.aspx", false);
-                                        }
-                                        else
-                                        {
-                                            Debug.WriteLine("Redirecting to Student Dashboard");
-                                            Response.Redirect("~/Student/Dashboard.aspx", false);
-                                        }
-                                        Context.ApplicationInstance.CompleteRequest();
-                                        break;
+                                if (role == "Admin")
+                                    Response.Redirect("~/Admin/Dashboard.aspx", false);
+                                else
+                                    Response.Redirect("~/Student/Dashboard.aspx", false);
 
-                                    case "LOCKED":
-                                        Debug.WriteLine("Account LOCKED.");
-                                        lblMessage.Text = "Account locked. Try again after 5 minutes.";
-                                        break;
+                                Context.ApplicationInstance.CompleteRequest();
+                            }
+                            else if (result == "LOCKED")
+                            {
+                                DateTime lockUntil = Convert.ToDateTime(reader["LockUntil"]);
+                                txtUsername.Enabled = false;
+                                txtPassword.Enabled = false;
+                                btnLogin.Enabled = false;
 
-                                    case "WRONG_PASSWORD":
-                                        Debug.WriteLine("Wrong password entered.");
-                                        lblMessage.Text = "Wrong password.";
-                                        break;
+                                lblMessage.Text = "Account locked.";
 
-                                    case "INVALID_USER":
-                                        Debug.WriteLine("User not found.");
-                                        lblMessage.Text = "User not found.";
-                                        break;
-
-                                    default:
-                                        lblMessage.Text = "Unknown login error.";
-                                        break;
-                                }
+                                string script = $"startLockTimer('{lockUntil:yyyy-MM-dd HH:mm:ss}');";
+                                ClientScript.RegisterStartupScript(this.GetType(), "lockTimer", script, true);
                             }
                             else
                             {
-                                Debug.WriteLine("No result returned from stored procedure.");
-                                lblMessage.Text = "Unexpected error occurred.";
+                                lblMessage.Text = "Invalid username or password.";
                             }
+                        }
+                        else
+                        {
+                            lblMessage.Text = "Invalid username or password.";
                         }
                     }
                 }
-            } catch (Exception ex)
+            } 
+            catch (Exception ex)
             {
-                Debug.WriteLine("EXCEPTION OCCURRED:");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine(ex.StackTrace);
-
-                lblMessage.Text = "System error occurred. Check debug output.";
+                lblMessage.Text = "System error occurred. Check try again.";
             }
-            Debug.WriteLine("===== LOGIN ATTEMPT END =====");
+        }
+
+        protected void txtUsername_TextChanged(object sender, EventArgs e)
+        {
+            string username = txtUsername.Text.Trim();
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_CheckUserLock", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@Username", SqlDbType.VarChar, 50).Value = username;
+
+                conn.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        string result = reader["Result"].ToString();
+
+                        if (result == "LOCKED")
+                        {
+                            DateTime lockUntil = Convert.ToDateTime(reader["LockUntil"]);
+
+                            txtUsername.Enabled = false;
+                            txtPassword.Enabled = false;
+                            btnLogin.Enabled = false;
+
+                            lblMessage.Text = "Account locked until " + lockUntil.ToString("HH:mm:ss");
+                        }
+                    }
+                }
+            }
         }
     }
 }

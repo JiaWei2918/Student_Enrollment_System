@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Web;
+using System.Text.RegularExpressions;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace StudentEnrollmentSystem.Account
 {
@@ -15,86 +11,98 @@ namespace StudentEnrollmentSystem.Account
     {
         string connStr = ConfigurationManager.ConnectionStrings["DBConnection"].ConnectionString;
 
+        private string HashPassword(string password)
+        {
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            {
+                var bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+
+                var builder = new System.Text.StringBuilder();
+                foreach (var b in bytes)
+                    builder.Append(b.ToString("x2"));
+
+                return builder.ToString();
+            }
+        }
+
         protected void btnReset_Click(object sender, EventArgs e)
         {
-            Debug.WriteLine("===== RESET PASSWORD ATTEMPT START =====");
+            if (!Page.IsValid)
+                return;
+
+            lblMessage.Text = "";
+            lblMessage.ForeColor = System.Drawing.Color.Red;
+
+            string username = txtUsername.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string newPassword = txtNewPassword.Text;
+            string confirmPassword = txtConfirmPassword.Text;
+
+            if(newPassword != confirmPassword)
+            {
+                lblMessage.Text = "Passwords do not match.";
+                return;
+            }
+
+            if(!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                lblMessage.Text = "Invalid email format.";
+                return;
+            }
 
             try
             {
-                lblMessage.Text = "";
-                lblMessage.ForeColor = System.Drawing.Color.Red;
-
-                string username = txtUsername.Text.Trim();
-                string email = txtEmail.Text.Trim();
-                string newPassword = txtNewPassword.Text.Trim();
-
-                Debug.WriteLine("Username Entered: " + username);
-                Debug.WriteLine("Email Entered: " + email);
-
-                if (string.IsNullOrEmpty(username) ||
-                    string.IsNullOrEmpty(email) ||
-                    string.IsNullOrEmpty(newPassword))
-                {
-                    Debug.WriteLine("Validation Failed: One or more fields empty.");
-                    lblMessage.Text = "All fields are required.";
-                    return;
-                }
-
-                //string hashedPassword = PasswordHelper.HashPassword(newPassword);
-                //Debug.WriteLine("Password hashed successfully.");
+                string hashedPassword = HashPassword(newPassword);
 
                 using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_ResetPassword", conn))
                 {
-                    Debug.WriteLine("Opening SQL Connection...");
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@Username", SqlDbType.VarChar, 50).Value = username;
+                    cmd.Parameters.Add("@Email", SqlDbType.VarChar, 100).Value = email;
+                    cmd.Parameters.Add("@NewPasswordHash", SqlDbType.VarChar, 255).Value = hashedPassword;
+
                     conn.Open();
-                    Debug.WriteLine("SQL Connection Opened.");
 
-                    using (SqlCommand cmd = new SqlCommand("sp_ResetPassword", conn))
+                    object resultObj = cmd.ExecuteScalar();
+                    
+                    if(resultObj == null)
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
+                        lblMessage.Text = "Unable to process request. Please try again.";
+                        return;
+                    }
 
-                        cmd.Parameters.AddWithValue("@Username", username);
-                        cmd.Parameters.AddWithValue("@Email", email);
-                        cmd.Parameters.AddWithValue("@NewPasswordHash", newPassword);
+                    string result = resultObj != null ? resultObj.ToString() : "";
 
-                        Debug.WriteLine("Executing Stored Procedure sp_ResetPassword...");
+                    if (result == "SUCCESS")
+                    {
+                        lblMessage.ForeColor = System.Drawing.Color.Green;
+                        lblMessage.Text = "Password reset successfully. Redirecting to login...";
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                string result = reader["Result"].ToString();
-                                Debug.WriteLine("Stored Procedure Result: " + result);
+                        txtNewPassword.Text = "";
+                        txtConfirmPassword.Text = "";
 
-                                if (result == "SUCCESS")
-                                {
-                                    lblMessage.ForeColor = System.Drawing.Color.Green;
-                                    lblMessage.Text = "Password reset successful. You may login now.";
-
-                                    Debug.WriteLine("Password reset SUCCESS.");
-                                }
-                                else
-                                {
-                                    lblMessage.Text = "Invalid username or email.";
-                                    Debug.WriteLine("Reset FAILED: Invalid info."); 
-                                }
-                            } else
-                            {
-                                Debug.WriteLine("No result returned from stored procedure.");
-                                lblMessage.Text = "Unexpected error occurred.";
-                            }
-                        }
+                        Response.AddHeader("REFRESH", "2;URL=Login.aspx");
+                    }
+                    else if (result == "INVALID_INFO")
+                    {
+                        lblMessage.Text = "Invalid username or email.";
+                    }
+                    else
+                    {
+                        lblMessage.Text = "Password reset failred. Please try again.";
                     }
                 }
-            } catch (Exception ex)
+            } 
+            catch (SqlException ex)
             {
-                Debug.WriteLine("EXCEPTION OCCURRED:");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine(ex.StackTrace);
-
-                lblMessage.Text = "System error occurred. Check debug output.";
+                lblMessage.Text = "Database error occured. Please try again later.";
             }
-            Debug.WriteLine("===== RESET PASSWORD ATTEMPT END =====");
+            catch (Exception ex)
+            {
+                lblMessage.Text = "System error occurred. Please contact administrator.";
+            }
         }
     }
 }

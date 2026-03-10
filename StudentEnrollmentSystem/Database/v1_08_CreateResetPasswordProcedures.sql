@@ -13,7 +13,8 @@ BEGIN
 
     SELECT @UserID = UA.UserID
     FROM UserAccount UA
-    INNER JOIN Student S ON UA.UserID = S.UserID
+    INNER JOIN Student S 
+        ON UA.UserID = S.UserID
     WHERE UA.Username = @Username
       AND S.Email = @Email;
 
