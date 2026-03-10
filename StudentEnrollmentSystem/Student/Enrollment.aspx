@@ -34,7 +34,6 @@
 
         .message{
             margin-top:15px;
-            color:green;
             font-weight:bold;
         }
     </style>
@@ -45,10 +44,25 @@
 
         Welcome, <asp:Label ID="lblStudentName" runat="server"></asp:Label>
 
+        <br /><br />
+        
+        <b>Current Semester:</b><asp:Label ID="lblSemester" runat="server"></asp:Label>
+
+        <br />
+
+        <b>Enrollment Period:</b><asp:Label ID="lblAddPeriod" runat="server"></asp:Label>
+
+        <br /><br />
+
+        <b>Total Credits:</b>
+        <asp:Label ID="lblTotalCredits" runat="server" Font-Bold="true"></asp:Label>
+
+        <br /><br />
+
         <h3>Available Courses</h3>
 
-        <asp:GridView ID="gvCourses" runat="server" AutoGenerateColumns="False" 
-            CssClass="grid"
+        <asp:GridView ID="gvCourses" runat="server" AutoGenerateColumns="False" CssClass="grid"
+            EmptyDataText="No available courses."
             OnRowCommand="gvCourses_RowCommand"
             OnRowDataBound="gvCourses_RowDataBound">
             <Columns>
@@ -68,7 +82,8 @@
                             Text="Enroll"
                             CssClass="btn"
                             CommandName="Enroll"
-                            CommandArgument='<%# Eval("OfferingID") %>' />
+                            CommandArgument='<%# Eval("OfferingID") %>' 
+                            OnClientClick="return confirm('Confirm course enrollment?');" />
                     </ItemTemplate>
                 </asp:TemplateField>
             </Columns>
@@ -77,7 +92,8 @@
         <br />
 
         <h3>My Enrolled Courses</h3>
-        <asp:GridView ID="gvMyCourses" runat="server" AutoGenerateColumns="False">
+
+        <asp:GridView ID="gvMyCourses" runat="server" AutoGenerateColumns="False" EmptyDataText="You have not enrolled in any courses.">
            <Columns>
                 <asp:BoundField DataField="CourseCode" HeaderText="Course Code"/>
                 <asp:BoundField DataField="CourseName" HeaderText="Course Name"/>
@@ -89,7 +105,7 @@
 
         <br/>
 
-        <asp:Label ID="lblMessage" runat="server" Font-Bold="true"></asp:Label>
+        <asp:Label ID="lblMessage" runat="server" CssClass="message"></asp:Label>
     </form>
 </body>
 </html>

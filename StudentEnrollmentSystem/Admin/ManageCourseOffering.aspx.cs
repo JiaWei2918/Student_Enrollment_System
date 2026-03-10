@@ -72,10 +72,10 @@ namespace StudentEnrollmentSystem.Admin
             {
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@CourseID", ddlCourse.SelectedValue);
-                cmd.Parameters.AddWithValue("@SemesterID", ddlSemester.SelectedValue);
-                cmd.Parameters.AddWithValue("@Lecturer", txtLecturer.Text.Trim());
-                cmd.Parameters.AddWithValue("@Capacity", Convert.ToInt32(txtCapacity.Text));
+                cmd.Parameters.Add("@CourseID", SqlDbType.Int).Value = ddlCourse.SelectedValue;
+                cmd.Parameters.Add("@SemesterID", SqlDbType.Int).Value = ddlSemester.SelectedValue;
+                cmd.Parameters.Add("@Lecturer", SqlDbType.VarChar,100).Value = txtLecturer.Text.Trim();
+                cmd.Parameters.Add("@Capacity", SqlDbType.Int).Value = Convert.ToInt32(txtCapacity.Text);
 
                 conn.Open();
                 string result = cmd.ExecuteScalar().ToString();
@@ -168,7 +168,7 @@ namespace StudentEnrollmentSystem.Admin
             using (SqlCommand cmd = new SqlCommand("sp_DeleteCourseOffering", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@OfferingID", id);
+                cmd.Parameters.Add("@OfferingID", SqlDbType.Int).Value = id;
 
                 conn.Open();
                 cmd.ExecuteScalar();

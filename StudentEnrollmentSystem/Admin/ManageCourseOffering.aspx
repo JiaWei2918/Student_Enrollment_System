@@ -35,10 +35,10 @@
             OnRowEditing="gvOffering_RowEditing"
             OnRowCancelingEdit="gvOffering_RowCancelingEdit"
             OnRowUpdating="gvOffering_RowUpdating"
-            OnRowDeleting="gvOffering_RowDeleting">
+            OnRowDeleting="gvOffering_RowDeleting"
+            EmptyDataText="No course offerings found.">
 
             <Columns>
-
                 <asp:BoundField DataField="CourseCode" HeaderText="Course Code" ReadOnly="True" />
                 <asp:BoundField DataField="CourseName" HeaderText="Course Name" ReadOnly="True" />
                 <asp:BoundField DataField="SemesterName" HeaderText="Semester" ReadOnly="True" />
@@ -64,7 +64,8 @@
                     </EditItemTemplate>
                 </asp:TemplateField>
 
-                <asp:BoundField DataField="AvailableSeats" HeaderText="Available" ReadOnly="True" />
+                <asp:BoundField DataField="EnrolledStudents" HeaderText="Enrolled" ReadOnly="True" />
+                <asp:BoundField DataField="SeatsLeft" HeaderText="Seats Left" ReadOnly="True" />
                 <asp:BoundField DataField="Status" HeaderText="Status" ReadOnly="True" />
 
                 <asp:CommandField ShowEditButton="True" ShowDeleteButton="True" />
