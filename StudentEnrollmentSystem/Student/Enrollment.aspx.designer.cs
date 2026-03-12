@@ -33,6 +33,33 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Label lblStudentName;
 
         /// <summary>
+        /// lblSemester control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSemester;
+
+        /// <summary>
+        /// lblAddPeriod control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblAddPeriod;
+
+        /// <summary>
+        /// lblTotalCredits control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTotalCredits;
+
+        /// <summary>
         /// gvCourses control.
         /// </summary>
         /// <remarks>

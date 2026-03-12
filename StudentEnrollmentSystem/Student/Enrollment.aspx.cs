@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -16,151 +13,235 @@ namespace StudentEnrollmentSystem.Student
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            try
+            if (Session["StudentID"] == null || Session["Role"]?.ToString() != "Student")
             {
-                if (Session["StudentID"] == null || Session["Role"] == null || Session["Role"].ToString() != "Student")
-                {
-                    Response.Redirect("~/Account/Login.aspx");
-                    return;
-                }
+                Response.Redirect("~/Account/Login.aspx");
+                return;
+            }
 
-                if (!IsPostBack)
+            if (!IsPostBack)
+            {
+                try
                 {
-                    if (Session["FullName"] != null)
-                    {
-                        lblStudentName.Text = Session["FullName"].ToString();
-                    }
-                    else
-                    {
-                        lblStudentName.Text = "Student";
-                    }
+                    lblStudentName.Text = Session["FullName"]?.ToString() ?? "Student";
+
+                    LoadActiveSemester();
                     LoadCourses();
                     LoadMyCourses();
+                    LoadTotalCredits();
+                }
+                catch (SqlException sqlEx)
+                {
+                    ShowError("Database error while loading page.");
+
+                    System.Diagnostics.Debug.WriteLine(sqlEx.Message);
+                }
+                catch (Exception ex)
+                {
+                    ShowError("Unexpected system error occured.");
+
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                lblMessage.ForeColor = System.Drawing.Color.Red;
-                lblMessage.Text = "Page loading error.";
+        }
 
-                System.Diagnostics.Debug.WriteLine(ex.Message);
+        private void ShowError(string msg)
+        {
+            lblMessage.ForeColor = System.Drawing.Color.Red;
+            lblMessage.Text = msg;
+        }
+
+        private void LoadActiveSemester()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
+                {
+                    conn.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            lblSemester.Text = reader["SemesterName"] + " " + reader["AcademicYear"];
+
+                            DateTime start = Convert.ToDateTime(reader["AddPeriodStart"]);
+                            DateTime end = Convert.ToDateTime(reader["AddPeriodEnd"]);
+
+                            lblAddPeriod.Text = start.ToShortDateString() + " - " + end.ToShortDateString();
+                        }
+                        else
+                        {
+                            lblSemester.Text = "No active semester";
+                            lblAddPeriod.Text = "-";
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                ShowError("Failred to load semester inforamtion.");
             }
         }
 
         private void LoadCourses()
-        {
-            int studentID = Convert.ToInt32(Session["StudentID"]);
-
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                SqlCommand cmd = new SqlCommand("sp_GetAvailableCourses", conn);
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@StudentID", studentID);
-
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-
-                da.Fill(dt);
-
-                gvCourses.DataSource = dt;
-                gvCourses.DataBind();
-            }
-        }
-
-        void LoadMyCourses()
         {
             try
             {
                 int studentID = Convert.ToInt32(Session["StudentID"]);
 
                 using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_GetAvailableCourses", conn))
                 {
-                    SqlCommand cmd = new SqlCommand("sp_GetStudentEnrollments", conn);
                     cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@StudentID", studentID);
+                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
 
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 
-                    gvMyCourses.DataSource = dt;
-                    gvMyCourses.DataBind();
+                    gvCourses.DataSource = dt;
+                    gvCourses.DataBind();
                 }
             }
             catch (Exception ex)
             {
-                lblMessage.ForeColor = System.Drawing.Color.Red;
-                lblMessage.Text = "Error loading enrolled courses: " + ex.Message;
+                ShowError("Unable to load available courses.");
+
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+        }
+
+        void LoadMyCourses()
+        {
+            int studentID = Convert.ToInt32(Session["StudentID"]);
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetStudentEnrollments", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                gvMyCourses.DataSource = dt;
+                gvMyCourses.DataBind();
+            }
+        }
+
+        private void LoadTotalCredits()
+        {
+            int studentID = Convert.ToInt32(Session["StudentID"]);
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetStudentCredits", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+
+                conn.Open();
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    int credits = reader["TotalCredits"] == DBNull.Value
+                        ? 0
+                        : Convert.ToInt32(reader["TotalCredits"]);
+
+                    int maxCredit = reader["MaxCredits"] == DBNull.Value
+                        ? 0
+                        : Convert.ToInt32(reader["MaxCredits"]);
+
+                    lblTotalCredits.Text = credits + " / " + maxCredit;
+
+                    if (maxCredit > 0 && credits >= maxCredit)
+                    {
+                        lblTotalCredits.ForeColor = System.Drawing.Color.Red;
+                    }
+                }
+            }
+        }
+
+        private int? GetActiveSemesterID()
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                conn.Open();
+
+                object result = cmd.ExecuteScalar();
+
+                if (result == null || result == DBNull.Value)
+                    return null;
+
+                return Convert.ToInt32(result);
             }
         }
 
         protected void gvCourses_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            if (e.CommandName == "Enroll")
+            if (e.CommandName != "Enroll") return;
+
+            try
             {
-                try
+                int offeringID = Convert.ToInt32(e.CommandArgument);
+                int studentID = Convert.ToInt32(Session["StudentID"]);
+
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_EnrollCourse", conn))
                 {
-                    int offeringID = Convert.ToInt32(e.CommandArgument);
-                    int studentID = Convert.ToInt32(Session["StudentID"]);
+                    conn.Open();
 
-                    using (SqlConnection conn = new SqlConnection(connStr))
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+                    cmd.Parameters.Add("@OfferingID", SqlDbType.Int).Value = offeringID;
+
+                    object resultobj = cmd.ExecuteScalar();
+                    string result = resultobj?.ToString() ?? "ERROR";
+
+                    switch (result)
                     {
-                        conn.Open();
+                        case "SUCCESS":
+                            lblMessage.ForeColor = System.Drawing.Color.Green;
+                            lblMessage.Text = "Course enrolled successfully.";
+                            break;
 
-                        SqlCommand cmd = new SqlCommand("sp_EnrollCourse", conn);
-                        cmd.CommandType = CommandType.StoredProcedure;
+                        case "FULL":
+                            ShowError("Course is already full.");
+                            break;
 
-                        cmd.Parameters.AddWithValue("@StudentID", studentID);
-                        cmd.Parameters.AddWithValue("@OfferingID", offeringID);
+                        case "ALREADY_ENROLLED":
+                            ShowError("You already enrolled in this course.");
+                            break;
 
-                        SqlDataReader reader = cmd.ExecuteReader();
+                        case "CREDIT_LIMIT":
+                            ShowError("Credit limit exceeded.");
+                            break;
 
-                        if (reader.Read())
-                        {
-                            string result = reader["Result"].ToString();
+                        case "ADD_CLOSED":
+                            ShowError("Enrollment period is closed.");
+                            break;
 
-                            switch (result)
-                            {
-                                case "SUCCESS":
-                                    lblMessage.ForeColor = System.Drawing.Color.Green;
-                                    lblMessage.Text = "Course enrolled successfully.";
-                                    break;
-
-                                case "FULL":
-                                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                                    lblMessage.Text = "Course is already full.";
-                                    break;
-
-                                case "ALREADY_ENROLLED":
-                                    lblMessage.ForeColor = System.Drawing.Color.Orange;
-                                    lblMessage.Text = "You already enrolled this course.";
-                                    break;
-
-                                case "CREDIT_LIMIT":
-                                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                                    lblMessage.Text = "Credit limit exceeded (Max 18 credits).";
-                                    break;
-
-                                case "ERROR":
-                                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                                    lblMessage.Text = "System error occurred. Please try again.";
-                                    break;
-                            }
-                        }
+                        default:
+                            ShowError("Enrollment failed.");
+                            break;
                     }
-
-                    LoadCourses();
-                    LoadMyCourses();
                 }
-                catch (Exception ex)
-                { 
-                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                    lblMessage.Text = "Unexpected error occurred.";
 
-                    System.Diagnostics.Debug.WriteLine(ex.Message);
-                }
+                LoadCourses();
+                LoadMyCourses();
+                LoadTotalCredits();
+            }
+            catch
+            {
+                ShowError("System error during enrollment.");
             }
         }
 
@@ -168,19 +249,13 @@ namespace StudentEnrollmentSystem.Student
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                object seatsObj = DataBinder.Eval(e.Row.DataItem, "SeatsLeft");
+                int seatsLeft = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "SeatsLeft"));
+                Button btn = (Button)e.Row.FindControl("btnEnroll");
 
-                if (seatsObj != DBNull.Value)
+                if (seatsLeft <= 0)
                 {
-                    int seatsLeft = Convert.ToInt32(seatsObj);
-
-                    Button btn = (Button)e.Row.FindControl("btnEnroll");
-
-                    if (seatsLeft <= 0)
-                    {
-                        btn.Enabled = false;
-                        btn.Text = "Full";
-                    }
+                    btn.Enabled = false;
+                    btn.Text = "Full";
                 }
             }
         }

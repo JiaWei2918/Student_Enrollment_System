@@ -37,7 +37,6 @@ BEGIN
         SemesterID,
         Lecturer,
         Capacity,
-        AvailableSeats,
         Status
     )
     VALUES
@@ -46,31 +45,10 @@ BEGIN
         @SemesterID,
         @Lecturer,
         @Capacity,
-        @Capacity,
         'Open'
     )
 
     SELECT 'SUCCESS'
-END
-GO
-
--- Update Course Offer Status --
-CREATE OR ALTER TRIGGER trg_UpdateOfferingStatus
-ON CourseOffering
-AFTER UPDATE
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    UPDATE co
-    SET Status = 
-        CASE 
-            WHEN co.AvailableSeats <= 0 THEN 'Full'
-            ELSE 'Open'
-        END
-    FROM CourseOffering co
-    INNER JOIN inserted i ON co.OfferingID = i.OfferingID
-    WHERE co.Status <> 'Cancelled';
 END
 GO
 
@@ -85,9 +63,10 @@ BEGIN
 
     DECLARE @Enrolled INT
 
-    SELECT @Enrolled = Capacity - AvailableSeats
-    FROM CourseOffering
+    SELECT @Enrolled = COUNT(*)
+    FROM Enrollment
     WHERE OfferingID = @OfferingID
+    AND Status = 'Enrolled'
 
     IF @Capacity < @Enrolled
     BEGIN
@@ -98,8 +77,7 @@ BEGIN
     UPDATE CourseOffering
     SET
         Lecturer = @Lecturer,
-        Capacity = @Capacity,
-        AvailableSeats = @Capacity - @Enrolled
+        Capacity = @Capacity
     WHERE OfferingID = @OfferingID
 
     SELECT 'SUCCESS'
@@ -142,12 +120,35 @@ BEGIN
         s.AcademicYear,
         co.Lecturer,
         co.Capacity,
-        co.AvailableSeats,
-        (co.Capacity - co.AvailableSeats) AS EnrolledStudents,
-        co.Status
+
+        COUNT(e.EnrollmentID) AS EnrolledStudents,
+        (co.Capacity - COUNT(e.EnrollmentID)) AS SeatsLeft,
+
+        CASE 
+            WHEN (co.Capacity - COUNT(e.EnrollmentID)) <= 0 THEN 'FULL'
+            ELSE 'Open'
+        END AS Status
     FROM CourseOffering co
     INNER JOIN Course c ON co.CourseID = c.CourseID
     INNER JOIN Semester s ON co.SemesterID = s.SemesterID
+    LEFT JOIN Enrollment e
+        ON co.OfferingID = e.OfferingID
+        AND e.Status = 'Enrolled'
+
+    GROUP BY
+    co.OfferingID,
+    c.CourseCode,
+    c.CourseName,
+    s.SemesterName,
+    s.AcademicYear,
+    co.Lecturer,
+    co.Capacity
+
+    ORDER BY
+    s.AcademicYear DESC,
+    s.SemesterName,
+    c.CourseCode;
+
 END
 GO
 
