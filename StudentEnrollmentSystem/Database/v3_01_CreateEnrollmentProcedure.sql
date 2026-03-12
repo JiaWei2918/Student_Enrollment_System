@@ -6,6 +6,7 @@ CREATE OR ALTER PROCEDURE sp_GetAvailableCourses
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
 
 SELECT 
     co.OfferingID,
@@ -15,7 +16,11 @@ SELECT
     s.SemesterName,
     co.Capacity,
     COUNT (e.EnrollmentID) AS EnrolledCount,
-    (co.Capacity - COUNT(e.EnrollmentID)) AS SeatsLeft
+
+    CASE
+        WHEN (co.Capacity - COUNT(e.EnrollmentID)) < 0 THEN 0
+        ELSE (co.Capacity - COUNT(e.EnrollmentID))
+    END AS SeatsLeft
 FROM CourseOffering co
 JOIN Course c ON co.CourseID = c.CourseID
 JOIN Semester s ON co.SemesterID = s.SemesterID
@@ -24,11 +29,13 @@ LEFT JOIN Enrollment e
     AND e.Status= 'Enrolled'
 
 WHERE s.Status = 'Active'
-AND co.OfferingID NOT IN
+AND NOT EXISTS
 (
-    SELECT OfferingID
-    FROM Enrollment
-    WHERE StudentID = @StudentID
+    SELECT 1
+    FROM Enrollment e2
+    WHERE e2.StudentID = @StudentID
+    AND e2.OfferingID = co.OfferingID
+    AND e2.Status = 'Enrolled'
 )
 
 GROUP BY
@@ -38,6 +45,8 @@ c.CourseName,
 c.CreditHours,
 s.SemesterName,
 co.Capacity
+
+ORDER BY c.CourseCode
 
 END
 GO
@@ -51,8 +60,17 @@ BEGIN
 SET NOCOUNT ON;
 
 BEGIN TRY
-
 BEGIN TRANSACTION
+
+IF NOT EXISTS (
+    SELECT 1 FROM CourseOffering
+    WHERE OfferingID = @OfferingID
+)
+BEGIN
+    SELECT 'ERROR'
+    ROLLBACK
+    RETURN
+END
 
 DECLARE @Capacity INT
 DECLARE @CurrentCount INT
@@ -71,11 +89,19 @@ SELECT
 FROM CourseOffering co
 JOIN Semester s ON co.SemesterID = s.SemesterID
 WHERE co.OfferingID = @OfferingID
+AND s.Status = 'Active'
+
+IF @Capacity IS NULL
+BEGIN
+    SELECT 'ERROR'
+    ROLLBACK
+    RETURN
+END
 
 IF GETDATE() < @AddStart OR GETDATE() > @AddEnd
 BEGIN
-    ROLLBACK TRANSACTION
     SELECT 'ADD_CLOSED'
+    ROLLBACK
     RETURN
 END
 
@@ -88,8 +114,8 @@ AND Status = 'Enrolled'
 -- Check capacity --
 IF @CurrentCount >= @Capacity
 BEGIN
-    ROLLBACK TRANSACTION
     SELECT 'FULL'
+    ROLLBACK
     RETURN
 END
 
@@ -100,8 +126,8 @@ IF EXISTS(
     AND Status = 'Enrolled'
 )
 BEGIN
-    ROLLBACK TRANSACTION
     SELECT 'ALREADY_ENROLLED'
+    ROLLBACK
     RETURN
 END
 
@@ -110,8 +136,10 @@ SELECT @CurrentCredits = ISNULL(SUM(c.CreditHours),0)
 FROM Enrollment e
 JOIN CourseOffering co ON e.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
+JOIN Semester s ON co.SemesterID = s.SemesterID
 WHERE e.StudentID=@StudentID
 AND e.Status='Enrolled'
+AND s.Status='Active'
 
 -- Credits of new course --
 SELECT @CourseCredits = c.CreditHours
@@ -121,8 +149,8 @@ WHERE co.OfferingID=@OfferingID
 
 IF (@CurrentCredits + @CourseCredits) > @MaxCredits
 BEGIN
-    ROLLBACK TRANSACTION
     SELECT 'CREDIT_LIMIT'
+    ROLLBACK
     RETURN
 END
 
@@ -175,19 +203,28 @@ CREATE OR ALTER PROCEDURE sp_GetStudentCredits
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
+
+DECLARE @ActiveSemesterID INT
+DECLARE @MaxCredits INT
+
+SELECT
+    @ActiveSemesterID = SemesterID,
+    @MaxCredits = MaxCredits
+FROM Semester
+WHERE Status = 'Active'
 
 SELECT 
-ISNULL(SUM(c.CreditHours),0) AS TotalCredits,
-MAX(s.MaxCredits) AS MaxCredits
+    ISNULL(SUM(c.CreditHours),0) AS TotalCredits,
+    ISNULL(@MaxCredits,0) AS MaxCredits
 
 FROM Enrollment e
 JOIN CourseOffering co ON e.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
-JOIN Semester s ON co.SemesterID = s.SemesterID
 
 WHERE e.StudentID = @StudentID
 AND e.Status = 'Enrolled'
-AND s.Status = 'Active'
+AND co.SemesterID = @ActiveSemesterID
 
 END
 GO
@@ -198,10 +235,13 @@ AS
 BEGIN
 
 SELECT
+SemesterID,
 SemesterName,
 AcademicYear,
 AddPeriodStart,
-AddPeriodEnd
+AddPeriodEnd,
+DropPeriodStart,
+DropPeriodEnd
 
 FROM Semester
 WHERE Status='Active'

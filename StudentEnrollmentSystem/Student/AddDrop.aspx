@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Add/Drop Course</title>
+    <title>Add / Drop Course</title>
 
     <style>
         body {
@@ -47,6 +47,10 @@
 </head>
 <body>
     <form id="form1" runat="server">
+        <h3>Current Semester: <asp:Label ID="lblSemester" runat="server" Font-Bold="true"></asp:Label></h3>
+        <h4>Add Period: <asp:Label ID="lblAddPeriod" runat="server"></asp:Label></h4>
+        <h4>Drop Period: <asp:Label ID="lblDropPeriod" runat="server"></asp:Label></h4>
+        <br /><br />
         <h2>Add Courses</h2>
 
         <asp:GridView ID="gvAvailable" runat="server" AutoGenerateColumns="False"
@@ -56,12 +60,13 @@
                 <asp:BoundField DataField="CourseCode" HeaderText="Course Code" />
                 <asp:BoundField DataField="CourseName" HeaderText="Course Name" />
                 <asp:BoundField DataField="Capacity" HeaderText="Capacity" />
-                <asp:BoundField DataField="Enrolled" HeaderText="Enrolled" />
+                <asp:BoundField DataField="EnrolledCount" HeaderText="Enrolled" />
                 <asp:BoundField DataField="SeatsLeft" HeaderText="Seats Left" />
 
                 <asp:TemplateField>
                     <ItemTemplate>
                         <asp:Button
+                            ID="btnAdd"
                             runat="server"
                             Text="Add"
                             CssClass="btnAdd"

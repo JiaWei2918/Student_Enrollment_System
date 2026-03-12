@@ -42,15 +42,15 @@
     <form id="form1" runat="server">
         <h2>Course Enrollment</h2>
 
-        Welcome, <asp:Label ID="lblStudentName" runat="server"></asp:Label>
+        Welcome, <asp:Label ID="lblStudentName" runat="server" Font-Bold="true"></asp:Label>
 
-        <br /><br />
+        <br />
         
-        <b>Current Semester:</b><asp:Label ID="lblSemester" runat="server"></asp:Label>
+        <b>Current Semester:</b><asp:Label ID="lblSemester" runat="server" Font-Bold="true"></asp:Label>
 
         <br />
 
-        <b>Enrollment Period:</b><asp:Label ID="lblAddPeriod" runat="server"></asp:Label>
+        <b>Enrollment Period:</b><asp:Label ID="lblAddPeriod" runat="server" Font-Bold="true"></asp:Label>
 
         <br /><br />
 
@@ -103,9 +103,7 @@
             </Columns>
         </asp:GridView>
 
-        <br/>
-
-        <asp:Label ID="lblMessage" runat="server" CssClass="message"></asp:Label>
+        <asp:Label ID="lblMessage" runat="server" CssClass="message" ></asp:Label>
     </form>
 </body>
 </html>
