@@ -9,6 +9,9 @@ AS
 BEGIN
 SET NOCOUNT ON;
 
+BEGIN TRY
+BEGIN TRANSACTION
+
 DECLARE @DropStart DATE
 DECLARE @DropEnd DATE
 
@@ -18,14 +21,33 @@ SELECT
 FROM CourseOffering co
 JOIN Semester s ON co.SemesterID = s.SemesterID
 WHERE co.OfferingID = @OfferingID
+AND s.Status = 'Active'
 
-IF GETDATE() < @DropStart OR GETDATE() > @DropEnd
+IF GETDATE() > @DropEnd
 BEGIN
-    SELECT 'DROP_CLOSED' AS Result
+    IF EXISTS (
+        SELECT 1
+        FROM AddDropHistory
+        WHERE StudentID = @StudentID
+        AND OfferingID = @OfferingID
+        AND ActionType = 'Drop'
+        AND RequestStatus = 'Pending'
+    )
+    BEGIN
+        SELECT 'REQUEST_EXISTS'
+        ROLLBACK
+        RETURN
+    END
+
+    INSERT INTO AddDropHistory
+    (StudentID, OfferingID, ActionType, RequestStatus)
+    VALUES
+    (@StudentID, @OfferingID, 'Drop', 'Pending')
+
+    COMMIT
+    SELECT 'PENDING_APPROVAL'
     RETURN
 END
-
-BEGIN TRANSACTION
 
 UPDATE Enrollment
 SET Status = 'Dropped'
@@ -33,17 +55,31 @@ WHERE StudentID = @StudentID
 AND OfferingID = @OfferingID
 AND Status = 'Enrolled'
 
-IF @@ROWCOUNT > 0
+IF @@ROWCOUNT = 0
 BEGIN
-    COMMIT TRANSACTION
-    SELECT 'SUCCESS' AS Result
-END
-ELSE
-BEGIN
-    ROLLBACK TRANSACTION
-    SELECT 'NOT_FOUND' AS Result
+    ROLLBACK
+    SELECT 'NOT_FOUND'
+    RETURN
 END
 
+INSERT INTO AddDropHistory
+(StudentID, OfferingID, ActionType, RequestStatus, ApprovedDate)
+VALUES
+(@StudentID, @OfferingID, 'Drop', 'Approved', GETDATE())
+
+COMMIT
+
+SELECT 'SUCCESS'
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+ROLLBACK
+
+SELECT 'ERROR'
+
+END CATCH
 END
 GO
 
@@ -67,7 +103,6 @@ JOIN CourseOffering co ON e.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
 JOIN Semester s ON co.SemesterID = s.SemesterID
 WHERE e.StudentID = @StudentID
-AND e.Status = 'Enrolled'
 AND s.Status = 'Active'
 
 ORDER BY e.EnrollmentDate DESC
@@ -76,10 +111,11 @@ END
 GO
 
 -- Get Student Enrollment History --
-CREATE OR ALTER PROCEDURE sp_GetStudentEnrollmentHistory
+CREATE OR ALTER PROCEDURE sp_GetStudentAddDropHistory
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
 
 SELECT
     c.CourseCode,
@@ -87,14 +123,18 @@ SELECT
     c.CreditHours,
     s.SemesterName,
     s.AcademicYear,
-    e.Status,
-    e.EnrollmentDate
-FROM Enrollment e
-JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+    h.ActionType,
+    h.ActionDate,
+    h.RequestStatus,
+    a.FullName AS ApprovedByName,
+    h.ApprovedDate
+FROM AddDropHistory h
+JOIN CourseOffering co ON h.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
 JOIN Semester s ON co.SemesterID = s.SemesterID
-WHERE e.StudentID = @StudentID
-ORDER BY e.EnrollmentDate DESC
+LEFT JOIN Administrator a ON h.ApprovedBy = a.AdminID
+WHERE h.StudentID = @StudentID
+ORDER BY h.ActionDate DESC
 
 END
 GO

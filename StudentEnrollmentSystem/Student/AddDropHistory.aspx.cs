@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace StudentEnrollmentSystem.Student
 {
@@ -32,16 +28,23 @@ namespace StudentEnrollmentSystem.Student
         {
             int studentID = Convert.ToInt32(Session["StudentID"]);
 
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("sp_GetStudentEnrollmentHistory", conn))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@StudentID", studentID);
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_GetStudentAddDropHistory", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
 
-                conn.Open();
+                    conn.Open();
 
-                gvHistory.DataSource = cmd.ExecuteReader();
-                gvHistory.DataBind();
+                    gvHistory.DataSource = cmd.ExecuteReader();
+                    gvHistory.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                lblMessage.Text = "Error loading history.";
             }
         }
     }

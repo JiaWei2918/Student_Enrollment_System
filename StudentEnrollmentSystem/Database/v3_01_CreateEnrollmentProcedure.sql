@@ -29,8 +29,8 @@ LEFT JOIN Enrollment e
     AND e.Status= 'Enrolled'
 
 WHERE s.Status = 'Active'
-AND NOT EXISTS
-(
+
+AND NOT EXISTS (
     SELECT 1
     FROM Enrollment e2
     WHERE e2.StudentID = @StudentID
@@ -79,10 +79,12 @@ DECLARE @CourseCredits INT
 DECLARE @MaxCredits INT
 DECLARE @AddStart DATE
 DECLARE @AddEnd DATE
+DECLARE @SemesterID INT
 
 -- Get course capacity --
 SELECT 
     @Capacity = co.Capacity,
+    @SemesterID = co.SemesterID,
     @AddStart = s.AddPeriodStart,
     @AddEnd = s.AddPeriodEnd,
     @MaxCredits = s.MaxCredits
@@ -98,10 +100,30 @@ BEGIN
     RETURN
 END
 
-IF GETDATE() < @AddStart OR GETDATE() > @AddEnd
+-- Late Add --
+IF GETDATE() > @AddEnd
 BEGIN
-    SELECT 'ADD_CLOSED'
-    ROLLBACK
+    IF EXISTS (
+        SELECT 1
+        FROM AddDropHistory
+        WHERE StudentID = @StudentID
+        AND OfferingID = @OfferingID
+        AND ActionType = 'Add'
+        AND RequestStatus = 'Pending'
+    )
+    BEGIN
+        SELECT 'REQUEST_EXISTS'
+        ROLLBACK
+        RETURN
+    END
+
+    INSERT INTO AddDropHistory
+    (StudentID, OfferingID, ActionType, RequestStatus)
+    VALUES
+    (@StudentID, @OfferingID, 'Add', 'Pending')
+
+    COMMIT
+    SELECT 'PENDING_APPROVAL'
     RETURN
 END
 
@@ -136,16 +158,15 @@ SELECT @CurrentCredits = ISNULL(SUM(c.CreditHours),0)
 FROM Enrollment e
 JOIN CourseOffering co ON e.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
-JOIN Semester s ON co.SemesterID = s.SemesterID
-WHERE e.StudentID=@StudentID
-AND e.Status='Enrolled'
-AND s.Status='Active'
+WHERE e.StudentID = @StudentID
+AND e.Status = 'Enrolled'
+AND co.SemesterID = @SemesterID
 
 -- Credits of new course --
 SELECT @CourseCredits = c.CreditHours
 FROM CourseOffering co
 JOIN Course c ON co.CourseID = c.CourseID
-WHERE co.OfferingID=@OfferingID
+WHERE co.OfferingID = @OfferingID
 
 IF (@CurrentCredits + @CourseCredits) > @MaxCredits
 BEGIN
@@ -157,7 +178,10 @@ END
 INSERT INTO Enrollment (StudentID, OfferingID, Status)
 VALUES (@StudentID, @OfferingID, 'Enrolled')
 
-COMMIT TRANSACTION
+INSERT INTO AddDropHistory (StudentID, OfferingID, ActionType, RequestStatus, ApprovedDate)
+VALUES (@StudentID, @OfferingID, 'Add', 'Approved', GETDATE())
+
+COMMIT
 
 SELECT 'SUCCESS'
 
@@ -165,7 +189,7 @@ END TRY
 BEGIN CATCH
 
 IF @@TRANCOUNT > 0
-ROLLBACK TRANSACTION
+ROLLBACK
 
 SELECT 'ERROR'
 
