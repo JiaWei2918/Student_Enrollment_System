@@ -4,26 +4,35 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Enrollment History</title>
+    <title>Stuent Add / Drop History</title>
 </head>
 <body>
     <form runat="server">
-        <h2>My Enrollment History</h2>
+        <h2>My Add / Drop History</h2>
 
-        <asp:GridView ID="gvHistory" runat="server" AutoGenerateColumns="False">
+        <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
 
+        <asp:GridView ID="gvHistory" runat="server" AutoGenerateColumns="False" BorderWidth="1"
+                      BorderColor="#ccc" GridLines="Both" CellPading="6" EmptyDataText="No Add/Drop history found.">
         <Columns>
+            <asp:BoundField DataField="CourseCode" HeaderText="Course Code" />
+            <asp:BoundField DataField="CourseName" HeaderText="Course Name" />
+            <asp:BoundField DataField="CreditHours" HeaderText="Credits" />
+            <asp:BoundField DataField="SemesterName" HeaderText="Semester" />
+            <asp:BoundField DataField="AcademicYear" HeaderText="Year" />
 
-        <asp:BoundField DataField="CourseCode" HeaderText="Course Code" />
-        <asp:BoundField DataField="CourseName" HeaderText="Course Name" />
-        <asp:BoundField DataField="CreditHours" HeaderText="Credits" />
-        <asp:BoundField DataField="SemesterName" HeaderText="Semester" />
-        <asp:BoundField DataField="AcademicYear" HeaderText="Year" />
-        <asp:BoundField DataField="Status" HeaderText="Status" />
-        <asp:BoundField DataField="EnrollmentDate" HeaderText="Date" DataFormatString="{0:yyyy-MM-dd}" />
+            <asp:BoundField DataField="ActionType" HeaderText="Action" />
+            <asp:BoundField DataField="ActionDate" HeaderText="Request Date"
+                            DataFormatString="{0:yyyy-MM-dd HH:mm}" 
+                            NullDisplayText="-" />
 
+            <asp:BoundField DataField="RequestStatus" HeaderText="Status" />
+            <asp:BoundField DataField="ApprovedByName" HeaderText="Approved By" 
+                            NullDisplayText="-" />
+
+            <asp:BoundField DataField="ApprovedDate" HeaderText="Approved Date"
+                            DataFormatString="{0:yyyy-MM-dd HH:mm}" />
         </Columns>
-
         </asp:GridView>
     </form>
 </body>

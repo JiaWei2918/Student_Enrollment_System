@@ -180,23 +180,31 @@ namespace StudentEnrollmentSystem.Student
                             break;
 
                         case "FULL":
-                            lblMessage.Text = "Course is full.";
+                            lblMessage.Text = "Course is already full.";
                             break;
 
                         case "ALREADY_ENROLLED":
-                            lblMessage.Text = "You already enrolled this course.";
+                            lblMessage.Text = "You are already enrolled in this course.";
                             break;
 
                         case "CREDIT_LIMIT":
-                            lblMessage.Text = "Credit limit exceeded.";
+                            lblMessage.Text = "You have exceeded the maximum credit limit.";
                             break;
 
-                        case "ADD_CLOSED":
-                            lblMessage.Text = "Add period is closed.";
+                        case "PENDING_APPROVAL":
+                            lblMessage.Text = "Late add request submitted. Waiting for administrator approval.";
+                            break;
+
+                        case "REQUEST_EXISTS":
+                            lblMessage.Text = "You already have a pending request for this course.";
+                            break;
+
+                        case "ERROR":
+                            lblMessage.Text = "System Error occured. Please contact administrator.";
                             break;
 
                         default:
-                            lblMessage.Text = "Enrollment failed.";
+                            lblMessage.Text = "Unable to process the request.";
                             break;
                     }
                 }
@@ -223,7 +231,7 @@ namespace StudentEnrollmentSystem.Student
 
                 Button btn = (Button)e.Row.FindControl("btnAdd");
 
-                if (seatsLeft <= 0 && btn != null)
+                if (btn != null && seatsLeft <= 0)
                 {
                     btn.Enabled = false;
                     btn.Text = "Full";
@@ -258,9 +266,13 @@ namespace StudentEnrollmentSystem.Student
                         lblMessage.ForeColor = System.Drawing.Color.Green;
                         lblMessage.Text = "Course dropped successfully.";
                     }
-                    else if (result == "DROP_CLOSED")
+                    else if (result == "PENDING_APPROVAL")
                     {
-                        lblMessage.Text = "Drop period has ended.";
+                        lblMessage.Text = "Late drop request submitted. Waiting for administrator approval.";
+                    }
+                    else if (result == "REQUEST_EXISTS")
+                    {
+                        lblMessage.Text = "You are submitted a drop request for this course.";
                     }
                     else
                     {

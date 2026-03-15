@@ -32,7 +32,9 @@ BEGIN
             ActionType VARCHAR(10) CHECK (ActionType IN ('Add','Drop')) NOT NULL,
             ActionDate DATETIME DEFAULT GETDATE(),
             Reason TEXT NULL,
+            RequestStatus VARCHAR(15) CHECK (RequestStatus IN ('Pending', 'Approved', 'Rejected')) DEFAULT 'Pending',
             ApprovedBy INT NULL,
+            ApprovedDate DATETIME NULL,
 
             FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
             FOREIGN KEY (OfferingID) REFERENCES CourseOffering(OfferingID),
