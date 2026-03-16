@@ -139,7 +139,7 @@
 
                 <!-- Account -->
                 <div class="card">
-                    <a href="Account/ChangePassword.aspx">Change Password</a>
+                    <a href="../Account/ChangePassword.aspx">Change Password</a>
                     <p>Update account password.</p>
                 </div>
 
