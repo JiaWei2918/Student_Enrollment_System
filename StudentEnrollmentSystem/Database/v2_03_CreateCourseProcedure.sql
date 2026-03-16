@@ -115,6 +115,20 @@ BEGIN
 END
 GO
 
+-- Get Course for Prerequisite --
+CREATE OR ALTER PROCEDURE sp_GetCoursesForPrerequisite
+    @CourseID INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT CourseID, CourseName
+    FROM Course
+    WHERE (@CourseID IS NULL OR CourseID <> @CourseID)
+    ORDER BY CourseName
+END
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM DatabaseVersion
     WHERE ScriptName = 'v2_03_CreateCourseProcedure.sql'

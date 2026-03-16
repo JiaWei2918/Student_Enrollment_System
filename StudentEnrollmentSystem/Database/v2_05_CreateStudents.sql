@@ -129,13 +129,13 @@ BEGIN
     SELECT @UserID = UserID FROM Student
     WHERE StudentID = @StudentID;
 
-    /*IF EXISTS (
+    IF EXISTS (
         SELECT 1 FROM Enrollment WHERE StudentID = @StudentID
     )
     BEGIN
         SELECT 'HAS_ENROLLMENTS'
         RETURN
-    END*/
+    END
 
     DELETE FROM Student
     WHERE StudentID = @StudentID;
@@ -151,24 +151,28 @@ GO
 CREATE OR ALTER PROCEDURE sp_GetAllStudents
 AS
 BEGIN
-    SELECT 
-        s.StudentID,
-        s.MatricNo,
-        s.FullName,
-        s.Email,
-        CASE WHEN s.Phone IS NULL OR LTRIM(RTRIM(s.Phone)) = ''
-            THEN '-' ELSE s.Phone END AS Phone,
+SET NOCOUNT ON;
 
-        CASE WHEN s.Program IS NULL OR LTRIM(RTRIM(s.Program)) = ''
-            THEN '-' ELSE s.Program END AS Program,
+SELECT 
+    s.StudentID,
+    s.MatricNo,
+    s.FullName,
+    s.Email,
+    CASE WHEN s.Phone IS NULL OR LTRIM(RTRIM(s.Phone)) = ''
+        THEN '-' ELSE s.Phone END AS Phone,
 
-        CASE WHEN s.Section IS NULL OR LTRIM(RTRIM(s.Section)) = ''
-            THEN '-' ELSE s.Section END AS Section,
-        s.EnrollmentDate,
-        s.Status,
-        u.Username
-    FROM Student s
-    INNER JOIN UserAccount u ON s.UserID = u.UserID
+    CASE WHEN s.Program IS NULL OR LTRIM(RTRIM(s.Program)) = ''
+        THEN '-' ELSE s.Program END AS Program,
+
+    CASE WHEN s.Section IS NULL OR LTRIM(RTRIM(s.Section)) = ''
+        THEN '-' ELSE s.Section END AS Section,
+    s.EnrollmentDate,
+    s.Status,
+    u.Username
+FROM Student s
+INNER JOIN UserAccount u ON s.UserID = u.UserID
+
+ORDER BY s.MatricNo
 END
 GO
 

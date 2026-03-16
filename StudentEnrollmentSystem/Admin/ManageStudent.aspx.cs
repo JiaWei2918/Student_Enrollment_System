@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -31,6 +28,7 @@ namespace StudentEnrollmentSystem.Admin
             using (SqlCommand cmd = new SqlCommand("sp_GetAllStudents", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
+
                 conn.Open();
                 gvStudent.DataSource = cmd.ExecuteReader();
                 gvStudent.DataBind();
@@ -59,6 +57,12 @@ namespace StudentEnrollmentSystem.Admin
             string matricNo = txtMatricNo.Text.Trim();
             string hashedPassword = HashPassword(matricNo);
 
+            if (!DateTime.TryParse(txtEnrollmentDate.Text, out DateTime enrollDate))
+            {
+                lblMessage.Text = "Invalid enrollment date.";
+                return;
+            }
+
             using (SqlConnection conn = new SqlConnection(connStr))
             using (SqlCommand cmd = new SqlCommand("sp_AddStudent", conn))
             {
@@ -70,12 +74,11 @@ namespace StudentEnrollmentSystem.Admin
                 cmd.Parameters.AddWithValue("@Phone", txtPhone.Text.Trim());
                 cmd.Parameters.AddWithValue("@Program", txtProgram.Text.Trim());
                 cmd.Parameters.AddWithValue("@Section", txtSection.Text.Trim());
-                cmd.Parameters.AddWithValue("@EnrollmentDate", Convert.ToDateTime(txtEnrollmentDate.Text));
+                cmd.Parameters.AddWithValue("@EnrollmentDate", enrollDate);
                 cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                 conn.Open();
-                object obj = cmd.ExecuteScalar();
-                string result = obj == null ? "ERROR" : obj.ToString();
+                string result = cmd.ExecuteScalar()?.ToString();
 
                 HandleResult(result);
             }
@@ -110,17 +113,17 @@ namespace StudentEnrollmentSystem.Admin
                     ((TextBox)row.Cells[1].Controls[0]).Text);
                 cmd.Parameters.AddWithValue("@Email",
                     ((TextBox)row.Cells[2].Controls[0]).Text);
-                cmd.Parameters.AddWithValue("@Program",
+                cmd.Parameters.AddWithValue("@Phone",
                     ((TextBox)row.Cells[3].Controls[0]).Text);
-                cmd.Parameters.AddWithValue("@Section",
+                cmd.Parameters.AddWithValue("@Program",
                     ((TextBox)row.Cells[4].Controls[0]).Text);
-                cmd.Parameters.AddWithValue("@Phone", "");
-                cmd.Parameters.AddWithValue("@Status",
+                cmd.Parameters.AddWithValue("@Section",
                     ((TextBox)row.Cells[5].Controls[0]).Text);
+                cmd.Parameters.AddWithValue("@Status",
+                    ((TextBox)row.Cells[7].Controls[0]).Text);
 
                 conn.Open();
-                object obj = cmd.ExecuteScalar();
-                string result = obj == null ? "ERROR" : obj.ToString();
+                string result = cmd.ExecuteScalar()?.ToString();
 
                 if (result != "SUCCESS")
                 {
@@ -147,11 +150,11 @@ namespace StudentEnrollmentSystem.Admin
                 cmd.Parameters.AddWithValue("@StudentID", id);
 
                 conn.Open();
-                object obj = cmd.ExecuteScalar();
-                string result = obj == null ? "ERROR" : obj.ToString();
+                string result = cmd.ExecuteScalar()?.ToString();
 
                 if (result == "HAS_ENROLLMENTS")
                 {
+                    lblMessage.ForeColor = System.Drawing.Color.Red;
                     lblMessage.Text = "Cannot delete student. Student has enrollments.";
                     return;
                 }

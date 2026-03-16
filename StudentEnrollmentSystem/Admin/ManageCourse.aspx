@@ -14,11 +14,21 @@
         <div>
             Course Code:
             <asp:TextBox ID="txtCourseCode" runat="server" />
+            <asp:RequiredFieldValidator
+                 ControlToValidate="txtCourseCode"
+                 ErrorMessage="Required"
+                 ForeColor="Red"
+                 runat="server" />
         </div>
 
         <div>
             Course Name:
             <asp:TextBox ID="txtCourseName" runat="server" />
+             <asp:RequiredFieldValidator
+                  ControlToValidate="txtCourseName"
+                  ErrorMessage="Required"
+                  ForeColor="Red"
+                  runat="server" />
         </div>
 
         <div>
@@ -29,6 +39,18 @@
         <div>
             Credit Hours:
             <asp:TextBox ID="txtCreditHours" runat="server" />
+             <asp:RequiredFieldValidator
+                  ControlToValidate="txtCreditHours"
+                  ErrorMessage="Required"
+                  ForeColor="Red"
+                  runat="server" />
+
+             <asp:RegularExpressionValidator
+                  ControlToValidate="txtCreditHours"
+                  ValidationExpression="^\d+$"
+                  ErrorMessage="Number only"
+                  ForeColor="Red"
+                  runat="server" />
         </div>
 
         <div>
@@ -40,7 +62,8 @@
 
         <asp:Button ID="btnAdd" runat="server" Text="Add Course" OnClick="btnAdd_Click" />
 
-        <asp:Button ID="btnCancel" runat="server" Text="Cancel" OnClick="btnCancel_Click" CausesValidation="false" />
+        <asp:Button ID="btnCancel" runat="server" Text="Cancel" CausesValidation="false" 
+                    OnClick="btnCancel_Click" />
 
         <br /><br />
 
@@ -48,7 +71,8 @@
 
         <hr />
 
-        <asp:GridView ID="gvCourse" runat="server" AutoGenerateColumns="False" DataKeyNames="CourseID" OnRowCommand="gvCourse_RowCommand">
+        <asp:GridView ID="gvCourse" runat="server" AutoGenerateColumns="False" 
+                      DataKeyNames="CourseID" OnRowCommand="gvCourse_RowCommand" BorderWidth="1">
             <Columns>
                 <asp:BoundField DataField="CourseID" HeaderText="ID" />
                 <asp:BoundField DataField="CourseCode" HeaderText="Code" />
@@ -61,7 +85,8 @@
                         <asp:Button ID="btnEdit" runat="server"
                             Text="Edit"
                             CommandName="EditCourse"
-                            CommandArgument='<%# Eval("CourseID") %>' />
+                            CommandArgument='<%# Eval("CourseID") %>' 
+                            CausesValidation="false" />
                     </ItemTemplate>
                 </asp:TemplateField>
 
@@ -70,7 +95,9 @@
                         <asp:Button ID="btnDelete" runat="server"
                             Text="Delete"
                             CommandName="DeleteCourse"
-                            CommandArgument='<%# Eval("CourseID") %>' />
+                            CommandArgument='<%# Eval("CourseID") %>' 
+                            CausesValidation="false"
+                            OnClientClick ="return confirm('Are you sure you want to delete this course?');" />
                     </ItemTemplate>
                 </asp:TemplateField>
             </Columns>

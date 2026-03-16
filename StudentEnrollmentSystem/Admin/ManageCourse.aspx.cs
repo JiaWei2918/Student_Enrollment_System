@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace StudentEnrollmentSystem.Admin
 {
@@ -20,6 +15,7 @@ namespace StudentEnrollmentSystem.Admin
             if (Session["Role"] == null || Session["Role"].ToString() != "Admin")
             {
                 Response.Redirect("~/Account/Login.aspx");
+                return;
             }
 
             if (!IsPostBack)
@@ -33,88 +29,81 @@ namespace StudentEnrollmentSystem.Admin
         private void LoadCourses()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetAllCourses", conn))
             {
-                using (SqlCommand cmd = new SqlCommand("sp_GetAllCourses", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    conn.Open();
-                    gvCourse.DataSource = cmd.ExecuteReader();
-                    gvCourse.DataBind();
-                }
+                conn.Open();
+                gvCourse.DataSource = cmd.ExecuteReader();
+                gvCourse.DataBind();
             }
         }
 
-        private void LoadPrerequisiteCourses()
+        private void LoadPrerequisiteCourses(int? editingCourseID = null)
         {
             ddlPrerequisite.Items.Clear();
-            ddlPrerequisite.Items.Add(new ListItem("-- None --", ""));
+            ddlPrerequisite.Items.Add(new System.Web.UI.WebControls.ListItem("-- None --", ""));
 
             using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetCoursesForPrerequisite", conn))
             {
-                SqlCommand cmd = new SqlCommand("SELECT CourseID, CourseName FROM Course ORDER BY CourseName", conn);
+                cmd.CommandType= CommandType.StoredProcedure;
+
+                if (editingCourseID == null)
+                    cmd.Parameters.AddWithValue("@CourseID", DBNull.Value);
+                else
+                    cmd.Parameters.AddWithValue("@CourseID", editingCourseID);
+
                 conn.Open();
 
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    ddlPrerequisite.Items.Add(new ListItem(
-                        reader["CourseName"].ToString(),
-                        reader["CourseID"].ToString()
-                    ));
+                    ddlPrerequisite.Items.Add(
+                        new System.Web.UI.WebControls.ListItem(
+                            reader["CourseName"].ToString(),
+                            reader["CourseID"].ToString()
+                        ));
                 }
             }
         }
 
         protected void btnAdd_Click(object sender, EventArgs e)
         {
-            Debug.WriteLine("=== ADD COURSE START ===");
+            lblMessage.Text = "";
+            lblMessage.ForeColor = System.Drawing.Color.Red;
+
+            if (!int.TryParse(txtCreditHours.Text, out int credit))
+            {
+                lblMessage.Text = "Credit hours must be numeric.";
+                return;
+            }
 
             try
             {
-               if (string.IsNullOrWhiteSpace(txtCourseCode.Text) || string.IsNullOrWhiteSpace(txtCourseName.Text) ||
-                   string.IsNullOrWhiteSpace(txtCreditHours.Text))
-                {
-                    lblMessage.Text = "All required fields must be filled.";
-                    return;
-                }
-
-                if (!int.TryParse(txtCreditHours.Text, out int credit))
-                {
-                    lblMessage.Text = "Credit hours must be numeric.";
-                    return;
-                }
-
-                if (!string.IsNullOrEmpty(hfCourseID.Value) && hfCourseID.Value == ddlPrerequisite.SelectedValue)
-                {
-                    lblMessage.Text = "Course cannot be its own prerequisite.";
-                    return;
-                }
-
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     SqlCommand cmd;
 
                     if (string.IsNullOrEmpty(hfCourseID.Value))
-                    {
                         cmd = new SqlCommand("sp_AddCourse", conn);
-                    }
                     else
                     {
                         cmd = new SqlCommand("sp_UpdateCourse", conn);
-                        cmd.Parameters.AddWithValue("@CourseID", hfCourseID.Value);
+                        cmd.Parameters.Add("@CourseID", SqlDbType.Int).Value = hfCourseID.Value;
                     }
 
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@CourseCode", txtCourseCode.Text.Trim());
-                    cmd.Parameters.AddWithValue("@CourseName", txtCourseName.Text.Trim());
-                    cmd.Parameters.AddWithValue("@Description", txtDescription.Text.Trim());
-                    cmd.Parameters.AddWithValue("@CreditHours", credit);
+                    cmd.Parameters.Add("@CourseCode", SqlDbType.VarChar).Value = txtCourseCode.Text.Trim();
+                    cmd.Parameters.Add("@CourseName", SqlDbType.VarChar).Value = txtCourseName.Text.Trim();
+                    cmd.Parameters.Add("@Description", SqlDbType.VarChar).Value = txtDescription.Text.Trim();
+                    cmd.Parameters.Add("@CreditHours", SqlDbType.Int).Value = credit;
+
                     if (string.IsNullOrEmpty(ddlPrerequisite.SelectedValue))
-                        cmd.Parameters.AddWithValue("@PrerequisiteCourseID", DBNull.Value);
+                        cmd.Parameters.Add("@PrerequisiteCourseID", SqlDbType.Int).Value = DBNull.Value;
                     else
-                        cmd.Parameters.AddWithValue("@PrerequisiteCourseID", ddlPrerequisite.SelectedValue);
+                        cmd.Parameters.Add("@PrerequisiteCourseID", SqlDbType.Int).Value = ddlPrerequisite.SelectedValue;
 
                     conn.Open();
                     string result = cmd.ExecuteScalar().ToString();
@@ -122,40 +111,39 @@ namespace StudentEnrollmentSystem.Admin
                     if (result == "DUPLICATE")
                     {
                         lblMessage.Text = "Course Code already exists.";
+                        return;
                     }
+
+                    lblMessage.ForeColor = System.Drawing.Color.Green;
+                    if (string.IsNullOrEmpty(hfCourseID.Value))
+                        lblMessage.Text = "Course added successfully.";
                     else
-                    {
-                        lblMessage.ForeColor = System.Drawing.Color.Green;
-                        lblMessage.Text = "Course Added successfully.";
+                        lblMessage.Text = "Course updated successfully.";
 
-                        ClearForm();
-                        LoadCourses();
-                        LoadPrerequisiteCourses();
+                    ClearForm();
+                    LoadCourses();
+                    LoadPrerequisiteCourses();
 
-                        btnAdd.Text = "Add";
-                    }
+                    //btnAdd.Text = "Add";
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine(ex.Message);
-                lblMessage.Text = "Error adding course.";
+                lblMessage.Text = "System error occurred.";
             }
-
-            Debug.WriteLine("=== ADD COURSE END ===");
         }
 
-        protected void gvCourse_RowCommand(object sender, GridViewCommandEventArgs e)
+        protected void gvCourse_RowCommand(object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e)
         {
             int courseID = Convert.ToInt32(e.CommandArgument);
 
             if (e.CommandName == "DeleteCourse")
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_DeleteCourse", conn))
                 {
-                    SqlCommand cmd = new SqlCommand("sp_DeleteCourse", conn);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@CourseID", courseID);
+                    cmd.Parameters.Add("@CourseID", SqlDbType.Int).Value = courseID;
 
                     conn.Open();
                     string result = cmd.ExecuteScalar().ToString();
@@ -163,19 +151,21 @@ namespace StudentEnrollmentSystem.Admin
                     if (result == "USED_AS_PREREQUISITE")
                     {
                         lblMessage.ForeColor = System.Drawing.Color.Red;
-                        lblMessage.Text = "Cannot delete. This course is used as a prerequisite.";
+                        lblMessage.Text = "Cannot delete. Course is used as prerequisite.";
                         return;
                     }
-                    /*else if (result == "HAS_OFFERING")
+                    
+                    if (result == "HAS_OFFERING")
                     {
                         lblMessage.ForeColor = System.Drawing.Color.Red;
-                        lblMessage.Text = "Cannot delete. Course has active offerings.";
+                        lblMessage.Text = "Cannot delete. Course has offerings.";
                         return;
-                    }*/
-                }
-                lblMessage.ForeColor = System.Drawing.Color.Green;
-                lblMessage.Text = "Deleted successfully.";
+                    }
 
+                    lblMessage.ForeColor = System.Drawing.Color.Green;
+                    lblMessage.Text = "Deleted successfully.";
+                }
+                
                 LoadCourses();
                 LoadPrerequisiteCourses();
                 ClearForm();
@@ -183,30 +173,35 @@ namespace StudentEnrollmentSystem.Admin
 
             if (e.CommandName == "EditCourse")
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
+                LoadCourseForEdit(courseID);
+            }
+        }
+
+        private void LoadCourseForEdit(int courseID)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("SELECT * FROM Course WHERE CourseID=@ID", conn))
+            {
+                cmd.Parameters.Add("@ID", SqlDbType.Int).Value = courseID;
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
                 {
-                    SqlCommand cmd = new SqlCommand("SELECT * FROM Course WHERE CourseID=@ID", conn);
-                    cmd.Parameters.AddWithValue("@ID", courseID);
+                    hfCourseID.Value = courseID.ToString();
+                    txtCourseCode.Text = reader["CourseCode"].ToString();
+                    txtCourseName.Text = reader["CourseName"].ToString();
+                    txtDescription.Text = reader["Description"].ToString();
+                    txtCreditHours.Text = reader["CreditHours"].ToString();
 
-                    conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
+                    LoadPrerequisiteCourses(courseID);
 
-                    if (reader.Read())
-                    {
-                        hfCourseID.Value = courseID.ToString();
-                        txtCourseCode.Text = reader["CourseCode"].ToString();
-                        txtCourseName.Text = reader["CourseName"].ToString();
-                        txtDescription.Text = reader["Description"].ToString();
-                        txtCreditHours.Text = reader["CreditHours"].ToString();
+                    if (reader["PrerequisiteCourseID"] != DBNull.Value)
+                        ddlPrerequisite.SelectedValue = reader["PrerequisiteCourseID"].ToString();
 
-                        if (reader["PrerequisiteCourseID"] != DBNull.Value)
-                            ddlPrerequisite.SelectedValue = reader["PrerequisiteCourseID"].ToString();
-                        else
-                            ddlPrerequisite.SelectedIndex = 0;
-
-                        btnAdd.Text = "Update Course";
-                        btnCancel.Visible = true;
-                    }
+                    btnAdd.Text = "Update Course";
+                    btnCancel.Visible = true;
                 }
             }
         }

@@ -11,21 +11,50 @@
         <div class="container">
             <h2>Manage Students</h2>
 
-            <asp:Label ID="lblMessage" runat="server" ForeColor="Red" Font-Bold="true"></asp:Label>
+            <asp:Label ID="lblMessage" runat="server" Font-Bold="true"></asp:Label>
 
             <h3>Add Student</h3>
             <table>
                 <tr>
                     <td>Matric No:</td>
-                    <td><asp:TextBox ID="txtMatricNo" runat="server" /></td>
+                    <td><asp:TextBox ID="txtMatricNo" runat="server" />
+                        <asp:RequiredFieldValidator
+                            ControlToValidate="txtMatricNo"
+                            ErrorMessage="Required"
+                            ForeColor="Red"
+                            ValidationGroup="AddStudent"
+                            runat="server" />
+                    </td>
                 </tr>
                 <tr>
                     <td>Full Name:</td>
-                    <td><asp:TextBox ID="txtFullName" runat="server" /></td>
+                    <td><asp:TextBox ID="txtFullName" runat="server" />
+                        <asp:RequiredFieldValidator
+                            ControlToValidate="txtFullName"
+                            ErrorMessage="Required"
+                            ForeColor="Red"
+                            ValidationGroup="AddStudent"
+                            runat="server" />
+                    </td>
                 </tr>
                 <tr>
                     <td>Email:</td>
-                    <td><asp:TextBox ID="txtEmail" runat="server" /></td>
+                    <td><asp:TextBox ID="txtEmail" runat="server" />
+                        <asp:RequiredFieldValidator
+                            ControlToValidate="txtEmail"
+                            ErrorMessage="Required"
+                            ForeColor="Red"
+                            ValidationGroup="AddStudent"
+                            runat="server" />
+
+                        <asp:RegularExpressionValidator
+                            ControlToValidate="txtEmail"
+                            ValidationExpression="\w+@\w+\.\w+"
+                            ErrorMessage="Invalid email"
+                            ForeColor="Red"
+                            ValidationGroup="AddStudent"
+                            runat="server" />
+                    </td>
                 </tr>
                 <tr>
                     <td>Phone:</td>
@@ -41,7 +70,14 @@
                 </tr>
                 <tr>
                     <td>Enrollment Date:</td>
-                    <td><asp:TextBox ID="txtEnrollmentDate" runat="server" TextMode="Date" /></td>
+                    <td><asp:TextBox ID="txtEnrollmentDate" runat="server" TextMode="Date" />
+                        <asp:RequiredFieldValidator
+                            ControlToValidate="txtEnrollmentDate"
+                            ErrorMessage="Required"
+                            ForeColor="Red"
+                            ValidationGroup="AddStudent"
+                            runat="server" />
+                    </td>
                 </tr>
                 <tr>
                     <td>Status:</td>
@@ -55,7 +91,8 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <asp:Button ID="btnAdd" runat="server" Text="Add Student" OnClick="btnAdd_Click" CssClass="btn btn-primary" />
+                        <asp:Button ID="btnAdd" runat="server" Text="Add Student" ValidationGroup="AddStudent" 
+                                    OnClick="btnAdd_Click" CssClass="btn btn-primary" />
                     </td>
                 </tr>
             </table>
@@ -68,7 +105,7 @@
                 OnRowCancelingEdit="gvStudent_RowCancelingEdit"
                 OnRowUpdating="gvStudent_RowUpdating"
                 OnRowDeleting="gvStudent_RowDeleting"
-                CssClass="table table-bordered">
+                BorderWidth="1">
                 <Columns>
                     <asp:BoundField DataField="MatricNo" HeaderText="Matric No" ReadOnly="True" />
                     <asp:BoundField DataField="FullName" HeaderText="Full Name" />
@@ -77,9 +114,10 @@
                     <asp:BoundField DataField="Program" HeaderText="Program" />
                     <asp:BoundField DataField="Section" HeaderText="Section" />
                     <asp:BoundField DataField="EnrollmentDate" HeaderText="Enrollment Date"
-                        DataFormatString="{0:yyyy-MM-dd}" />
+                        DataFormatString="{0:yyyy-MM-dd}" ReadOnly="True" />
                     <asp:BoundField DataField="Status" HeaderText="Status" />
-                    <asp:CommandField ShowEditButton="True" ShowDeleteButton="True" />
+                    <asp:CommandField ShowEditButton="True" ShowDeleteButton="True" CausesValidation="false" 
+                                      DeleteText="Delete" EditText="Edit" CancelText="Cancel" UpdateText="Update" />
                 </Columns>
             </asp:GridView>
         </div>
