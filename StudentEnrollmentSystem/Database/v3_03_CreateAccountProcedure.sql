@@ -118,6 +118,96 @@ END CATCH
 END 
 GO
 
+-- Get Bank Details --
+CREATE OR ALTER PROCEDURE sp_GetBankDetails
+    @StudentID INT
+AS
+BEGIN
+    SELECT
+        BankDetailID,
+        BankName,
+        '****' + RIGHT(AccountNumber, 4) AS AccountNumber,
+        AccountHolderName,
+        AccountType,
+        IsPrimary
+    FROM BankDetail
+    WHERE StudentID = @StudentID
+END
+GO
+
+-- Save Bank Details --
+CREATE OR ALTER PROCEDURE sp_SaveBankDetail
+    @BankDetailID INT = NULL,
+    @StudentID INT,
+    @BankName VARCHAR(100),
+    @AccountNumber VARCHAR(50),
+    @AccountHolderName VARCHAR(100),
+    @AccountType VARCHAR(20),
+    @IsPrimary BIT
+AS
+BEGIN
+SET NOCOUNT ON;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    IF EXISTS (
+        SELECT 1 FROM BankDetail
+        WHERE StudentID = @StudentID
+        AND AccountNumber = @AccountNumber
+        AND (@BankDetailID IS NULL OR BankDetailID <> @BankDetailID)
+    )
+    BEGIN
+        SELECT 'DUPLICATE_ACCOUNT';
+        RETURN;
+    END
+
+    IF @IsPrimary = 1
+    BEGIN
+        UPDATE BankDetail
+        SET IsPrimary = 0
+        WHERE StudentID = @StudentID;
+    END
+
+    IF @BankDetailID IS NULL
+    BEGIN
+        INSERT INTO BankDetail
+        (StudentID, BankName, AccountNumber, AccountHolderName, AccountType, IsPrimary)
+        VALUES
+        (@StudentID, @BankName, @AccountNumber, @AccountHolderName, @AccountType, @IsPrimary);
+    END
+    ELSE
+    BEGIN
+        UPDATE BankDetail
+        SET BankName = @BankName,
+            AccountNumber = @AccountNumber,
+            AccountHolderName = @AccountHolderName,
+            AccountType = @AccountType,
+            IsPrimary = @IsPrimary
+        WHERE BankDetailID = @BankDetailID;
+    END
+
+    COMMIT;
+    SELECT 'SUCCESS';
+END TRY
+BEGIN CATCH
+    ROLLBACK;
+    SELECT 'ERROR';
+END CATCH
+
+END
+GO
+
+-- Delete Bank Details --
+CREATE OR ALTER PROCEDURE sp_DeleteBankDetail
+    @BankDetailID INT
+AS
+BEGIN
+    DELETE FROM BankDetail
+    WHERE BankDetailID = @BankDetailID
+END
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM DatabaseVersion
     WHERE ScriptName = 'v3_03_CreateAccountProcedure.sql'

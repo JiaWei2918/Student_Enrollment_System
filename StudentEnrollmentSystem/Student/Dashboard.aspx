@@ -149,7 +149,7 @@
                 </div>
 
                 <div class="card">
-                    <a href="../Account/UpdateBankDetails.aspx">Update Bank Details</a>
+                    <a href="../Account/UpdateBankDetail.aspx">Update Bank Details</a>
                     <p>Manage bank account information.</p>
                 </div>
             </div>
