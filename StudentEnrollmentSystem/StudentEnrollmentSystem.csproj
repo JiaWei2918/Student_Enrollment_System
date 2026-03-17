@@ -103,6 +103,7 @@
     <Content Include="Account\ChangePassword.aspx" />
     <Content Include="Account\ForgotPassword.aspx" />
     <Content Include="Account\Login.aspx" />
+    <Content Include="Account\UpdateProfile.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
     <Content Include="Admin\ManageCourse.aspx" />
     <Content Include="Admin\ManageCourseOffering.aspx" />
@@ -237,6 +238,13 @@
     </Compile>
     <Compile Include="Account\Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account\UpdateProfile.aspx.cs">
+      <DependentUpon>UpdateProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account\UpdateProfile.aspx.designer.cs">
+      <DependentUpon>UpdateProfile.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>

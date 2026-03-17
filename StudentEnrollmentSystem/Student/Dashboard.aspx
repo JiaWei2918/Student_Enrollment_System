@@ -144,12 +144,12 @@
                 </div>
 
                 <div class="card">
-                    <a href="Account/UpdateProfile.aspx">Update Profile</a>
+                    <a href="../Account/UpdateProfile.aspx">Update Profile</a>
                     <p>Update phone and email.</p>
                 </div>
 
                 <div class="card">
-                    <a href="Account/UpdateBankDetails.aspx">Update Bank Details</a>
+                    <a href="../Account/UpdateBankDetails.aspx">Update Bank Details</a>
                     <p>Manage bank account information.</p>
                 </div>
             </div>

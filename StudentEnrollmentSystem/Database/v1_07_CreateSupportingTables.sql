@@ -28,7 +28,8 @@ BEGIN
             Address VARCHAR(255),
             DateOfBirth DATE,
             Nationality VARCHAR(50),
-            UpdatedAt DATETIME DEFAULT GETDATE(),
+            CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+            UpdatedAt DATETIME2 DEFAULT SYSDATETIME()
 
             FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
         );
