@@ -93,17 +93,17 @@
 
                 <!-- Enquiry -->
                 <div class="card">
-                    <a href="Enquiry/ContactUs.aspx">Contact Us</a>
+                    <a href="ContactUs.aspx">Contact Us</a>
                     <p>Submit enquiry to administration.</p>
                 </div>
 
                 <div class="card">
-                    <a href="Enquiry/TimetableMatching.aspx">Timetable Matching</a>
+                    <a href="TimetableMatching.aspx">Timetable Matching</a>
                     <p>Check timetable conflict.</p>
                 </div>
 
                 <div class="card">
-                    <a href="Enquiry/TeachingEvaluation.aspx">Teaching Evaluation</a>
+                    <a href="TeachingEvaluation.aspx">Teaching Evaluation</a>
                     <p>Evaluate course instructors.</p>
                 </div>
 
@@ -115,7 +115,7 @@
                 </div>
 
                 <div class="card">
-                    <a href="Statement/RegistrationSummary.aspx">Registration Summary</a>
+                    <a href="Timetable.aspx">Registration Summary</a>
                     <p>View class timetable and summary.</p>
                 </div>
 
@@ -127,12 +127,12 @@
                 </div>
 
                 <div class="card">
-                    <a href="Payment/PaymentHistory.aspx">Payment History</a>
+                    <a href="PaymentHistory.aspx">Payment History</a>
                     <p>View payment records and receipts.</p>
                 </div>
 
                 <div class="card">
-                    <a href="Payment/Invoice.aspx">Invoice</a>
+                    <a href="Invoice.aspx">Invoice</a>
                     <p>View invoices and adjustment notes.</p>
                 </div>
 
