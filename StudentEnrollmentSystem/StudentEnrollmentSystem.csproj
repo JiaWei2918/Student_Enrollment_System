@@ -153,6 +153,7 @@
     <Content Include="Database\v3_02_CreateAddDropProcedure.sql" />
     <Content Include="Database\v3_03_CreateAccountProcedure.sql" />
     <Content Include="Database\v3_04_CreateStatementProcedure.sql" />
+    <Content Include="Database\v3_05_CreateEnquiryProcedure.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
