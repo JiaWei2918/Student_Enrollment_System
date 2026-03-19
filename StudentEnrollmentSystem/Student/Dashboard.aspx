@@ -93,7 +93,7 @@
 
                 <!-- Enquiry -->
                 <div class="card">
-                    <a href="ContactUs.aspx">Contact Us</a>
+                    <a href="Enquiry.aspx">Contact Us</a>
                     <p>Submit enquiry to administration.</p>
                 </div>
 

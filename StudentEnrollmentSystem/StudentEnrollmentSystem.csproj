@@ -153,6 +153,7 @@
     <Content Include="Database\v3_02_CreateAddDropProcedure.sql" />
     <Content Include="Database\v3_03_CreateAccountProcedure.sql" />
     <Content Include="Database\v3_04_CreateStatementProcedure.sql" />
+    <Content Include="Database\v3_05_CreateEnquiryProcedure.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -220,7 +221,9 @@
     <Content Include="Student\Enrollment.aspx" />
     <Content Include="Student\Payment.aspx" />
     <Content Include="Student\Statement.aspx" />
+    <Content Include="Student\TeachingEvaluation.aspx" />
     <Content Include="Student\TimeTable.aspx" />
+    <Content Include="Student\TimetableMatching.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -401,12 +404,26 @@
     <Compile Include="Student\Statement.aspx.designer.cs">
       <DependentUpon>Statement.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\TeachingEvaluation.aspx.cs">
+      <DependentUpon>TeachingEvaluation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\TeachingEvaluation.aspx.designer.cs">
+      <DependentUpon>TeachingEvaluation.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\TimeTable.aspx.cs">
       <DependentUpon>TimeTable.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\TimeTable.aspx.designer.cs">
       <DependentUpon>TimeTable.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\TimetableMatching.aspx.cs">
+      <DependentUpon>TimetableMatching.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\TimetableMatching.aspx.designer.cs">
+      <DependentUpon>TimetableMatching.aspx</DependentUpon>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>

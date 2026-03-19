@@ -51,10 +51,10 @@ BEGIN
             EnquiryID INT IDENTITY(1,1) PRIMARY KEY,
             StudentID INT NOT NULL,
             Subject VARCHAR(100) NOT NULL,
-            Message TEXT NOT NULL,
+            Message NVARCHAR(MAX) NOT NULL,
             CreatedAt DATETIME DEFAULT GETDATE(),
             Status VARCHAR(20) CHECK (Status IN ('Pending','In Progress','Resolved','Closed')) DEFAULT 'Pending',
-            Response TEXT NULL,
+            Response NVARCHAR(MAX) NULL,
             RespondedBy INT NULL,
             ResponseDate DATETIME NULL,
 
@@ -69,7 +69,7 @@ BEGIN
             Rating INT CHECK (Rating BETWEEN 1 AND 5) NOT NULL,
             LecturerRating INT CHECK (LecturerRating BETWEEN 1 AND 5),
             CourseRating INT CHECK (CourseRating BETWEEN 1 AND 5),
-            Comment TEXT,
+            Comment NVARCHAR(MAX),
             SubmittedAt DATETIME DEFAULT GETDATE(),
             IsAnonymous BIT DEFAULT 0,
 
