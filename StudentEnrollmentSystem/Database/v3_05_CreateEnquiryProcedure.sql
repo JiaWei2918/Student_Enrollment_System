@@ -44,6 +44,68 @@ BEGIN
 END
 GO
 
+-- Get AvailableCourse with No Clash --
+CREATE OR ALTER PROCEDURE sp_GetAvailableCourses_NoClash
+    @StudentID INT,
+    @SemesterID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        co.OfferingID,
+        c.CourseCode,
+        c.CourseName,
+        co.Lecturer,
+
+        STRING_AGG(
+            cs.DayOfWeek + ' ' + 
+            CONVERT(VARCHAR(5), cs.StartTime, 108) + '-' +
+            CONVERT(VARCHAR(5), cs.EndTime, 108),
+            ', '
+        ) AS Schedule,
+        
+        MIN(cs.StartTime) AS SortTime
+    FROM CourseOffering co
+    INNER JOIN Course c ON co.CourseID = c.CourseID
+    INNER JOIN CourseSchedule cs ON co.OfferingID = cs.OfferingID
+
+    WHERE co.SemesterID = @SemesterID
+    AND co.Status = 'Open'
+
+    AND co.OfferingID NOT IN (
+        SELECT OfferingID FROM Enrollment
+        WHERE StudentID = @StudentID
+        AND Status = 'Enrolled'
+    )
+
+    AND co.OfferingID IN (
+        SELECT co2.OfferingID
+        FROM CourseOffering co2
+        LEFT JOIN Enrollment e2
+            ON co2.OfferingID = e2.OfferingID AND e2.Status = 'Enrolled'
+        GROUP BY co2.OfferingID, co2.Capacity
+        HAVING COUNT(e2.EnrollmentID) < co2.Capacity
+    )
+
+    AND NOT EXISTS (
+        SELECT 1
+        FROM Enrollment e
+        INNER JOIN CourseSchedule cs2 ON e.OfferingID = cs2.OfferingID
+        WHERE e.StudentID = @StudentID
+        AND e.Status = 'Enrolled'
+        AND cs2.DayOfWeek = cs.DayOfWeek
+        AND (
+            cs2.StartTime < cs.EndTime
+            AND cs2.EndTime > cs.StartTime
+        )
+    )
+
+    GROUP BY co.OfferingID, c.CourseCode, c.CourseName, co.Lecturer
+    ORDER BY SortTime;
+END
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM DatabaseVersion
     WHERE ScriptName = 'v3_05_CreateEnquiryProcedure.sql'
