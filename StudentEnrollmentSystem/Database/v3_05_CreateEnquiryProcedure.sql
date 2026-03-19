@@ -106,6 +106,92 @@ BEGIN
 END
 GO
 
+-- Get Enrolled Courses --
+CREATE OR ALTER PROCEDURE sp_GetEnrolledCourses
+    @StudentID INT,
+    @SemesterID INT
+AS
+BEGIN
+    SELECT 
+        co.OfferingID,
+        c.CourseCode
+    FROM Enrollment e
+    JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+    JOIN Course c ON co.CourseID = c.CourseID
+    WHERE e.StudentID = @StudentID
+    AND co.SemesterID = @SemesterID
+    AND e.Status = 'Enrolled'
+
+    AND co.OfferingID NOT IN (
+        SELECT OfferingID FROM TeachingEvaluation
+        WHERE StudentID = @StudentID
+    )
+END
+GO
+
+-- Submit Evaluation --
+CREATE OR ALTER PROCEDURE sp_SubmitEvaluation
+    @StudentID INT,
+    @OfferingID INT,
+    @Rating INT,
+    @LecturerRating INT = NULL,
+    @CourseRating INT = NULL,
+    @Comment NVARCHAR(MAX),
+    @IsAnonymous BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM Enrollment
+        WHERE StudentID = @StudentID
+        AND OfferingID = @OfferingID
+        AND Status = 'Enrolled'
+    )
+    BEGIN
+        SELECT 'NOT_ENROLLED'
+        RETURN
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM TeachingEvaluation
+        WHERE StudentID = @StudentID
+        AND OfferingID = @OfferingID
+    )
+    BEGIN
+        SELECT 'EXISTS'
+        RETURN
+    END
+
+    INSERT INTO TeachingEvaluation
+    (StudentID, OfferingID, Rating, LecturerRating, CourseRating, Comment, IsAnonymous)
+    VALUES
+    (@StudentID, @OfferingID, @Rating, @LecturerRating, @CourseRating, @Comment, @IsAnonymous);
+
+    SELECT 'SUCCESS'
+END
+GO
+
+-- Get Student Evaluations --
+CREATE OR ALTER PROCEDURE sp_GetMyEvaluations
+    @StudentID INT
+AS
+BEGIN
+    SELECT 
+        c.CourseCode,
+        te.Rating,
+        te.LecturerRating,
+        te.CourseRating,
+        te.Comment,
+        te.SubmittedAt
+    FROM TeachingEvaluation te
+    JOIN CourseOffering co ON te.OfferingID = co.OfferingID
+    JOIN Course c ON co.CourseID = c.CourseID
+    WHERE te.StudentID = @StudentID
+    ORDER BY te.SubmittedAt DESC
+END
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM DatabaseVersion
     WHERE ScriptName = 'v3_05_CreateEnquiryProcedure.sql'

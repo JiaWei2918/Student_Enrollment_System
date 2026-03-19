@@ -69,7 +69,7 @@ BEGIN
             Rating INT CHECK (Rating BETWEEN 1 AND 5) NOT NULL,
             LecturerRating INT CHECK (LecturerRating BETWEEN 1 AND 5),
             CourseRating INT CHECK (CourseRating BETWEEN 1 AND 5),
-            Comment TEXT,
+            Comment NVARCHAR(MAX),
             SubmittedAt DATETIME DEFAULT GETDATE(),
             IsAnonymous BIT DEFAULT 0,
 
