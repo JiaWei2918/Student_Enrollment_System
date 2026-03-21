@@ -31,6 +31,7 @@ BEGIN
             Description TEXT,
             CreditHours INT NOT NULL,
             PrerequisiteCourseID INT NULL,
+            Fee DECIMAL(10,2) DEFAULT 2500,
 
             CONSTRAINT FK_Course_Prerequisite
             FOREIGN KEY (PrerequisiteCourseID) REFERENCES Course(CourseID)

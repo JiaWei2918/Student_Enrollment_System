@@ -1,85 +1,226 @@
 USE StudentEnrollmentSystem;
 GO
 
--- Drop Course --
-CREATE OR ALTER PROCEDURE sp_DropCourse
+CREATE OR ALTER PROCEDURE sp_AddDropBatch
     @StudentID INT,
-    @OfferingID INT
+    @OfferingIDs VARCHAR(MAX),
+    @Action VARCHAR(10)
 AS
 BEGIN
-SET NOCOUNT ON;
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
 
-BEGIN TRY
-BEGIN TRANSACTION
+    DECLARE @tbl TABLE (OfferingID INT PRIMARY KEY)
 
-DECLARE @DropStart DATE
-DECLARE @DropEnd DATE
+    INSERT INTO @tbl
+    SELECT DISTINCT TRY_CAST(value AS INT)
+    FROM STRING_SPLIT(@OfferingIDs, ',')
+    WHERE TRY_CAST(value AS INT) IS NOT NULL
 
-SELECT
-    @DropStart = s.DropPeriodStart,
-    @DropEnd = s.DropPeriodEnd
-FROM CourseOffering co
-JOIN Semester s ON co.SemesterID = s.SemesterID
-WHERE co.OfferingID = @OfferingID
-AND s.Status = 'Active'
-
-IF GETDATE() > @DropEnd
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM AddDropHistory
-        WHERE StudentID = @StudentID
-        AND OfferingID = @OfferingID
-        AND ActionType = 'Drop'
-        AND RequestStatus = 'Pending'
-    )
+    IF NOT EXISTS (SELECT 1 FROM @tbl)
     BEGIN
-        SELECT 'REQUEST_EXISTS'
         ROLLBACK
+        SELECT 'NO_SELECTION'
         RETURN
     END
 
-    INSERT INTO AddDropHistory
-    (StudentID, OfferingID, ActionType, RequestStatus)
-    VALUES
-    (@StudentID, @OfferingID, 'Drop', 'Pending')
+    DECLARE @SemesterID INT
+    DECLARE @AddEnd DATE
+    DECLARE @DropEnd DATE
+    DECLARE @MaxCredits INT
+    DECLARE @CurrentCredits INT = 0
+
+    SELECT TOP 1
+        @SemesterID = s.SemesterID,
+        @AddEnd = s.AddPeriodEnd,
+        @DropEnd = s.DropPeriodEnd,
+        @MaxCredits = s.MaxCredits
+    FROM CourseOffering co
+    JOIN Semester s ON co.SemesterID = s.SemesterID
+    WHERE co.OfferingID IN (SELECT OfferingID FROM @tbl)
+
+    SELECT @CurrentCredits = ISNULL(SUM(c.CreditHours),0)
+    FROM Enrollment e
+    JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+    JOIN Course c ON co.CourseID = c.CourseID
+    WHERE e.StudentID = @StudentID
+    AND e.Status = 'Enrolled'
+    AND co.SemesterID = @SemesterID
+
+    DECLARE @TotalAmount DECIMAL(10,2) = 0
+
+    -------------------------------------------------
+    -- ADD COURSES
+    -------------------------------------------------
+    IF @Action = 'ADD'
+    BEGIN
+        DECLARE @NewCredits INT = 0
+
+        SELECT @NewCredits = SUM(c.CreditHours)
+        FROM @tbl t
+        JOIN CourseOffering co ON t.OfferingID = co.OfferingID
+        JOIN Course c ON co.CourseID = c.CourseID
+
+        IF (@CurrentCredits + ISNULL(@NewCredits,0)) > @MaxCredits
+        BEGIN
+            ROLLBACK
+            SELECT 'CREDIT_LIMIT'
+            RETURN
+        END
+
+        DECLARE @OfferingID INT
+
+        DECLARE curAdd CURSOR FOR SELECT OfferingID FROM @tbl
+        OPEN curAdd
+        FETCH NEXT FROM curAdd INTO @OfferingID
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            IF EXISTS (
+                SELECT 1
+                FROM CourseOffering co
+                WHERE co.OfferingID = @OfferingID
+                AND (
+                    SELECT COUNT(*) FROM Enrollment
+                    WHERE OfferingID = @OfferingID AND Status='Enrolled'
+                ) >= co.Capacity
+            )
+            BEGIN
+                ROLLBACK
+                SELECT 'FULL'
+                RETURN
+            END
+
+            IF EXISTS (
+                SELECT 1 FROM Enrollment
+                WHERE StudentID = @StudentID
+                AND OfferingID = @OfferingID
+                AND Status='Enrolled'
+            )
+            BEGIN
+                FETCH NEXT FROM curAdd INTO @OfferingID
+                CONTINUE
+            END
+
+            -- Late Add
+            IF GETDATE() > @AddEnd
+            BEGIN
+                INSERT INTO AddDropHistory
+                (StudentID, OfferingID, ActionType, RequestStatus)
+                VALUES
+                (@StudentID, @OfferingID, 'Add', 'Pending')
+
+                FETCH NEXT FROM curAdd INTO @OfferingID
+                CONTINUE
+            END
+
+            INSERT INTO Enrollment (StudentID, OfferingID, Status)
+            VALUES (@StudentID, @OfferingID, 'Enrolled')
+
+            INSERT INTO AddDropHistory
+            (StudentID, OfferingID, ActionType, RequestStatus, ApprovedDate)
+            VALUES
+            (@StudentID, @OfferingID, 'Add', 'Approved', GETDATE())
+
+            DECLARE @Fee DECIMAL(10,2)
+
+            SELECT @Fee = ISNULL(c.Fee,0)
+            FROM CourseOffering co
+            JOIN Course c ON co.CourseID = c.CourseID
+            WHERE co.OfferingID = @OfferingID
+
+            SET @TotalAmount += @Fee
+
+            FETCH NEXT FROM curAdd INTO @OfferingID
+        END
+
+        CLOSE curAdd
+        DEALLOCATE curAdd
+    END
+
+    -------------------------------------------------
+    -- DROP COURSES
+    -------------------------------------------------
+    ELSE IF @Action = 'DROP'
+    BEGIN
+        DECLARE @OfferingID2 INT
+
+        DECLARE curDrop CURSOR FOR SELECT OfferingID FROM @tbl
+        OPEN curDrop
+        FETCH NEXT FROM curDrop INTO @OfferingID2
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            IF GETDATE() > @DropEnd
+            BEGIN
+                INSERT INTO AddDropHistory
+                (StudentID, OfferingID, ActionType, RequestStatus)
+                VALUES
+                (@StudentID, @OfferingID2, 'Drop', 'Pending')
+
+                FETCH NEXT FROM curDrop INTO @OfferingID2
+                CONTINUE
+            END
+
+            UPDATE Enrollment
+            SET Status = 'Dropped'
+            WHERE StudentID = @StudentID
+            AND OfferingID = @OfferingID2
+            AND Status = 'Enrolled'
+
+            IF @@ROWCOUNT > 0
+            BEGIN
+                INSERT INTO AddDropHistory
+                (StudentID, OfferingID, ActionType, RequestStatus, ApprovedDate)
+                VALUES
+                (@StudentID, @OfferingID2, 'Drop', 'Approved', GETDATE())
+
+                DECLARE @Fee2 DECIMAL(10,2)
+
+                SELECT @Fee2 = ISNULL(c.Fee,0)
+                FROM CourseOffering co
+                JOIN Course c ON co.CourseID = c.CourseID
+                WHERE co.OfferingID = @OfferingID2
+
+                SET @TotalAmount -= @Fee2
+            END
+
+            FETCH NEXT FROM curDrop INTO @OfferingID2
+        END
+
+        CLOSE curDrop
+        DEALLOCATE curDrop
+    END
+
+    -------------------------------------------------
+    -- INVOICE UPDATE
+    -------------------------------------------------
+    DECLARE @InvoiceID INT
+
+    SELECT @InvoiceID = InvoiceID
+    FROM Invoice
+    WHERE StudentID = @StudentID
+    AND SemesterID = @SemesterID
+
+    IF @InvoiceID IS NULL
+    BEGIN
+        DECLARE @InvoiceNumber VARCHAR(50)
+        SET @InvoiceNumber = 'INV-' + FORMAT(GETDATE(),'yyyyMMddHHmmss')
+
+        INSERT INTO Invoice
+        (InvoiceNumber, StudentID, SemesterID, IssueDate, DueDate, TotalAmount, Status)
+        VALUES
+        (@InvoiceNumber, @StudentID, @SemesterID, GETDATE(), DATEADD(DAY,7,GETDATE()), @TotalAmount, 'Issued')
+    END
+    ELSE
+    BEGIN
+        UPDATE Invoice
+        SET TotalAmount = TotalAmount + @TotalAmount
+        WHERE InvoiceID = @InvoiceID
+    END
 
     COMMIT
-    SELECT 'PENDING_APPROVAL'
-    RETURN
-END
-
-UPDATE Enrollment
-SET Status = 'Dropped'
-WHERE StudentID = @StudentID
-AND OfferingID = @OfferingID
-AND Status = 'Enrolled'
-
-IF @@ROWCOUNT = 0
-BEGIN
-    ROLLBACK
-    SELECT 'NOT_FOUND'
-    RETURN
-END
-
-INSERT INTO AddDropHistory
-(StudentID, OfferingID, ActionType, RequestStatus, ApprovedDate)
-VALUES
-(@StudentID, @OfferingID, 'Drop', 'Approved', GETDATE())
-
-COMMIT
-
-SELECT 'SUCCESS'
-
-END TRY
-BEGIN CATCH
-
-IF @@TRANCOUNT > 0
-ROLLBACK
-
-SELECT 'ERROR'
-
-END CATCH
+    SELECT 'SUCCESS'
 END
 GO
 

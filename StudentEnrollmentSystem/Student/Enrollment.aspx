@@ -59,13 +59,25 @@
 
         <br /><br />
 
+        <asp:CheckBox ID="chkSelectAll" runat="server" 
+            AutoPostBack="true" 
+            OnCheckedChanged="chkSelectAll_CheckedChanged" 
+            Text="Select All Courses" />
+
         <h3>Available Courses</h3>
 
         <asp:GridView ID="gvCourses" runat="server" AutoGenerateColumns="False" CssClass="grid"
-            EmptyDataText="No available courses."
-            OnRowCommand="gvCourses_RowCommand"
+            EmptyDataText="No available courses." 
             OnRowDataBound="gvCourses_RowDataBound">
             <Columns>
+                <asp:TemplateField HeaderText="Select">
+                    <ItemTemplate>
+                        <asp:CheckBox ID="chkSelect" runat="server" />
+                        <asp:HiddenField ID="hfOfferingID" runat="server" 
+                            Value='<%# Eval("OfferingID") %>' />
+                    </ItemTemplate>
+                </asp:TemplateField>
+
                 <asp:BoundField DataField="CourseCode" HeaderText="Course Code" />
                 <asp:BoundField DataField="CourseName" HeaderText="Course Name" />
                 <asp:BoundField DataField="CreditHours" HeaderText="Credits" />
@@ -74,20 +86,15 @@
                 <asp:BoundField DataField="EnrolledCount" HeaderText="Enrolled" />
                 <asp:BoundField DataField="SeatsLeft" HeaderText="Seats Left" />
 
-                <asp:TemplateField HeaderText="Action">
-                    <ItemTemplate>
-                        <asp:Button 
-                            ID="btnEnroll"
-                            runat="server"
-                            Text="Enroll"
-                            CssClass="btn"
-                            CommandName="Enroll"
-                            CommandArgument='<%# Eval("OfferingID") %>' 
-                            OnClientClick="return confirm('Confirm course enrollment?');" />
-                    </ItemTemplate>
-                </asp:TemplateField>
             </Columns>
         </asp:GridView>
+
+        <br />
+
+        <asp:Button ID="btnEnrollSelected" runat="server" 
+            Text="Enroll Selected Courses" 
+            CssClass="btn" 
+            OnClick="btnEnrollSelected_Click" />
 
         <br />
 

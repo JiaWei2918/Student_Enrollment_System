@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -150,147 +151,65 @@ namespace StudentEnrollmentSystem.Student
             }
         }
 
-        protected void gvAvailable_RowCommand(object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e)
+        protected void btnAddSelected_Click(object sender, EventArgs e)
         {
-            if (e.CommandName != "AddCourse") return;
-
-            try
-            {
-                int offeringID = Convert.ToInt32(e.CommandArgument);
-                int studentID = Convert.ToInt32(Session["StudentID"]);
-
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_EnrollCourse", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    cmd.Parameters.Add("@OfferingID", SqlDbType.Int).Value = offeringID;
-
-                    conn.Open();
-
-                    object resultObj = cmd.ExecuteScalar();
-                    string result = resultObj?.ToString() ?? "ERROR";
-
-                    switch (result)
-                    {
-                        case "SUCCESS":
-                            lblMessage.ForeColor = System.Drawing.Color.Green;
-                            lblMessage.Text = "Course added successfully.";
-                            break;
-
-                        case "FULL":
-                            lblMessage.Text = "Course is already full.";
-                            break;
-
-                        case "ALREADY_ENROLLED":
-                            lblMessage.Text = "You are already enrolled in this course.";
-                            break;
-
-                        case "CREDIT_LIMIT":
-                            lblMessage.Text = "You have exceeded the maximum credit limit.";
-                            break;
-
-                        case "PENDING_APPROVAL":
-                            lblMessage.Text = "Late add request submitted. Waiting for administrator approval.";
-                            break;
-
-                        case "REQUEST_EXISTS":
-                            lblMessage.Text = "You already have a pending request for this course.";
-                            break;
-
-                        case "ERROR":
-                            lblMessage.Text = "System Error occured. Please contact administrator.";
-                            break;
-
-                        default:
-                            lblMessage.Text = "Unable to process the request.";
-                            break;
-                    }
-                }
-
-                LoadAvailableCourses();
-                LoadMyCourses();
-            }
-            catch (SqlException ex)
-            {
-                ShowError("Database error while loading enrolled courses.", ex);
-            }
-            catch (Exception ex)
-            {
-                ShowError("Unexpected syste error while loading enrolled courses.", ex);
-            }
+            ProcessAction("ADD");
         }
 
-        protected void gvAvailable_RowDataBound(object sender, GridViewRowEventArgs e)
+        protected void btnDropSelected_Click(object sender, EventArgs e)
         {
-            if (e.Row.RowType == DataControlRowType.DataRow)
-            {
-                object seatObj = DataBinder.Eval(e.Row.DataItem, "SeatsLeft");
-                int seatsLeft = seatObj == DBNull.Value ? 0 : Convert.ToInt32(seatObj);
-
-                Button btn = (Button)e.Row.FindControl("btnAdd");
-
-                if (btn != null && seatsLeft <= 0)
-                {
-                    btn.Enabled = false;
-                    btn.Text = "Full";
-                }
-            }
+            ProcessAction("DROP");
         }
 
-        protected void gvMyCourses_RowCommand(object sender, GridViewCommandEventArgs e)
+        private void ProcessAction(string action)
         {
-            if (e.CommandName != "DropCourse") return;
+            int studentID = Convert.ToInt32(Session["StudentID"]);
+            List<int> list = new List<int>();
 
-            try
+            GridView gv = action == "ADD" ? gvAvailable : gvMyCourses;
+            string chkName = action == "ADD" ? "chkAdd" : "chkDrop";
+
+            foreach (GridViewRow row in gv.Rows)
             {
-                int offeringID = Convert.ToInt32(e.CommandArgument);
-                int studentID = Convert.ToInt32(Session["StudentID"]);
+                CheckBox chk = (CheckBox)row.FindControl(chkName);
+                HiddenField hf = (HiddenField)row.FindControl("hfOfferingID");
 
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_DropCourse", conn))
+                if (chk != null && chk.Checked)
+                    list.Add(Convert.ToInt32(hf.Value));
+            }
+
+            if (list.Count == 0)
+            {
+                ShowError("Please select at least one course.");
+                return;
+            }
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_AddDropBatch", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@StudentID", studentID);
+                cmd.Parameters.AddWithValue("@OfferingIDs", string.Join(",", list));
+                cmd.Parameters.AddWithValue("@Action", action);
+
+                conn.Open();
+
+                string result = cmd.ExecuteScalar()?.ToString();
+
+                if (result == "SUCCESS")
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    cmd.Parameters.Add("@OfferingID", SqlDbType.Int).Value = offeringID;
-
-                    conn.Open();
-
-                    object resultObj = cmd.ExecuteScalar();
-                    string result = resultObj?.ToString();
-
-                    if (result == "SUCCESS")
-                    {
-                        lblMessage.ForeColor = System.Drawing.Color.Green;
-                        lblMessage.Text = "Course dropped successfully.";
-                    }
-                    else if (result == "PENDING_APPROVAL")
-                    {
-                        lblMessage.Text = "Late drop request submitted. Waiting for administrator approval.";
-                    }
-                    else if (result == "REQUEST_EXISTS")
-                    {
-                        lblMessage.Text = "You are submitted a drop request for this course.";
-                    }
-                    else
-                    {
-                        lblMessage.Text = "Unable to drop this course.";
-                    }
+                    lblMessage.ForeColor = System.Drawing.Color.Green;
+                    lblMessage.Text = action + " successful.";
                 }
+                else
+                {
+                    ShowError(result);
+                }
+            }
 
-                LoadAvailableCourses();
-                LoadMyCourses();
-            }
-            catch (SqlException ex)
-            {
-                ShowError("Database error while loading enrolled courses.", ex);
-            }
-            catch (Exception ex)
-            {
-                ShowError("Unexpected syste error while loading enrolled courses.", ex);
-            }
+            LoadAvailableCourses();
+            LoadMyCourses();
         }
     }
 }

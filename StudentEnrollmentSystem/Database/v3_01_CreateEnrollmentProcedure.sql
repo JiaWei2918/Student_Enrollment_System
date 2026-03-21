@@ -51,149 +51,152 @@ ORDER BY c.CourseCode
 END
 GO
 
--- Enroll Course --
-CREATE OR ALTER PROCEDURE sp_EnrollCourse
+-- Enroll Courses (Student) --
+CREATE OR ALTER PROCEDURE sp_EnrollCoursesBatch
     @StudentID INT,
-    @OfferingID INT
+    @OfferingIDs VARCHAR(MAX)
 AS
 BEGIN
-SET NOCOUNT ON;
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
 
-BEGIN TRY
-BEGIN TRANSACTION
+    DECLARE @tbl TABLE (OfferingID INT PRIMARY KEY)
 
-IF NOT EXISTS (
-    SELECT 1 FROM CourseOffering
-    WHERE OfferingID = @OfferingID
-)
-BEGIN
-    SELECT 'ERROR'
-    ROLLBACK
-    RETURN
-END
+    INSERT INTO @tbl
+    SELECT DISTINCT TRY_CAST(value AS INT)
+    FROM STRING_SPLIT(@OfferingIDs, ',')
+    WHERE TRY_CAST(value AS INT) IS NOT NULL
 
-DECLARE @Capacity INT
-DECLARE @CurrentCount INT
-DECLARE @CurrentCredits INT
-DECLARE @CourseCredits INT
-DECLARE @MaxCredits INT
-DECLARE @AddStart DATE
-DECLARE @AddEnd DATE
-DECLARE @SemesterID INT
-
--- Get course capacity --
-SELECT 
-    @Capacity = co.Capacity,
-    @SemesterID = co.SemesterID,
-    @AddStart = s.AddPeriodStart,
-    @AddEnd = s.AddPeriodEnd,
-    @MaxCredits = s.MaxCredits
-FROM CourseOffering co
-JOIN Semester s ON co.SemesterID = s.SemesterID
-WHERE co.OfferingID = @OfferingID
-AND s.Status = 'Active'
-
-IF @Capacity IS NULL
-BEGIN
-    SELECT 'ERROR'
-    ROLLBACK
-    RETURN
-END
-
--- Late Add --
-IF GETDATE() > @AddEnd
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM AddDropHistory
-        WHERE StudentID = @StudentID
-        AND OfferingID = @OfferingID
-        AND ActionType = 'Add'
-        AND RequestStatus = 'Pending'
-    )
+    IF NOT EXISTS (SELECT 1 FROM @tbl)
     BEGIN
-        SELECT 'REQUEST_EXISTS'
         ROLLBACK
+        SELECT 'NO_SELECTION'
         RETURN
     END
 
-    INSERT INTO AddDropHistory
-    (StudentID, OfferingID, ActionType, RequestStatus)
-    VALUES
-    (@StudentID, @OfferingID, 'Add', 'Pending')
+    DECLARE @SemesterID INT
+
+    SELECT @SemesterID = MIN(SemesterID)
+    FROM CourseOffering
+    WHERE OfferingID IN (SELECT OfferingID FROM @tbl)
+
+    IF EXISTS (
+        SELECT 1 FROM CourseOffering
+        WHERE OfferingID IN (SELECT OfferingID FROM @tbl)
+        AND SemesterID <> @SemesterID
+    )
+    BEGIN
+        ROLLBACK
+        SELECT 'DIFFERENT_SEMESTER'
+        RETURN
+    END
+
+    DECLARE @MaxCredits INT
+    DECLARE @CurrentCredits INT
+
+    SELECT @MaxCredits = MaxCredits
+    FROM Semester
+    WHERE SemesterID = @SemesterID
+
+    SELECT @CurrentCredits = ISNULL(SUM(c.CreditHours),0)
+    FROM Enrollment e
+    JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+    JOIN Course c ON co.CourseID = c.CourseID
+    WHERE e.StudentID = @StudentID
+    AND e.Status = 'Enrolled'
+    AND co.SemesterID = @SemesterID
+
+    IF EXISTS (
+        SELECT 1 FROM @tbl t
+        JOIN CourseOffering co ON t.OfferingID = co.OfferingID
+        WHERE (
+            SELECT COUNT(*)
+            FROM Enrollment e
+            WHERE e.OfferingID = co.OfferingID
+            AND Status = 'Enrolled'
+        ) >= co.Capacity
+    )
+    BEGIN
+        ROLLBACK
+        SELECT 'FULL'
+        RETURN
+    END
+
+    IF EXISTS (
+        SELECT 1
+        FROM @tbl t
+        JOIN CourseSchedule cs2 ON t.OfferingID = cs2.OfferingID
+        JOIN Enrollment e ON e.StudentID = @StudentID AND e.Status = 'Enrolled'
+        JOIN CourseSchedule cs1 ON e.OfferingID = cs1.OfferingID
+        WHERE cs1.DayOfWeek = cs2.DayOfWeek
+        AND cs1.StartTime < cs2.EndTime
+        AND cs1.EndTime > cs2.StartTime
+    )
+    BEGIN
+        ROLLBACK
+        SELECT 'CLASH'
+        RETURN
+    END
+
+    DECLARE @NewCredits INT
+
+    SELECT @NewCredits = SUM(c.CreditHours)
+    FROM @tbl t
+    JOIN CourseOffering co ON t.OfferingID = co.OfferingID
+    JOIN Course c ON co.CourseID = c.CourseID
+
+    IF (@CurrentCredits + ISNULL(@NewCredits, 0)) > @MaxCredits
+    BEGIN
+        ROLLBACK
+        SELECT 'CREDIT_LIMIT'
+        RETURN
+    END
+
+    INSERT INTO Enrollment (StudentID, OfferingID, Status)
+    SELECT @StudentID, t.OfferingID, 'Enrolled'
+    FROM @tbl t
+    WHERE NOT EXISTS (
+        SELECT 1 FROM Enrollment e
+        WHERE e.StudentID = @StudentID
+        AND e.OfferingID = t.OfferingID
+        AND e.Status = 'Enrolled'
+    )
+
+    DECLARE @TotalAmount DECIMAL(10,2)
+    
+    SELECT @TotalAmount = SUM(ISNULL(c.Fee, 0))
+    FROM @tbl t
+    JOIN Courseoffering co ON t.OfferingID = co.OfferingID
+    JOIN Course c ON co.CourseID = c.CourseID
+
+    DECLARE @InvoiceID INT
+
+    SELECT @InvoiceID = InvoiceID
+    FROM Invoice
+    WHERE StudentID = @StudentID
+    AND SemesterID = @SemesterID
+
+    IF @InvoiceID IS NULL
+    BEGIN
+        DECLARE @InvoiceNumber VARCHAR(50)
+        SET @InvoiceNumber = 'INV-' + FORMAT(GETDATE(),'yyyyMMddHHmmss')
+
+        INSERT INTO Invoice
+        (InvoiceNumber, StudentID, SemesterID, IssueDate, DueDate, TotalAmount, Status)
+        VALUES
+        (@InvoiceNumber, @StudentID, @SemesterID, GETDATE(), DATEADD(DAY,7,GETDATE()), @TotalAmount, 'Issued')
+    END
+    ELSE
+    BEGIN
+        UPDATE Invoice
+        SET TotalAmount = TotalAmount + @TotalAmount
+        WHERE InvoiceID = @InvoiceID
+    END
 
     COMMIT
-    SELECT 'PENDING_APPROVAL'
-    RETURN
-END
 
--- Count current students --
-SELECT @CurrentCount = COUNT(*)
-FROM Enrollment
-WHERE OfferingID = @OfferingID
-AND Status = 'Enrolled'
+    SELECT 'SUCCESS'
 
--- Check capacity --
-IF @CurrentCount >= @Capacity
-BEGIN
-    SELECT 'FULL'
-    ROLLBACK
-    RETURN
-END
-
-IF EXISTS(
-    SELECT 1 FROM Enrollment
-    WHERE StudentID = @StudentID
-    AND OfferingID = @OfferingID
-    AND Status = 'Enrolled'
-)
-BEGIN
-    SELECT 'ALREADY_ENROLLED'
-    ROLLBACK
-    RETURN
-END
-
--- Current student credits --
-SELECT @CurrentCredits = ISNULL(SUM(c.CreditHours),0)
-FROM Enrollment e
-JOIN CourseOffering co ON e.OfferingID = co.OfferingID
-JOIN Course c ON co.CourseID = c.CourseID
-WHERE e.StudentID = @StudentID
-AND e.Status = 'Enrolled'
-AND co.SemesterID = @SemesterID
-
--- Credits of new course --
-SELECT @CourseCredits = c.CreditHours
-FROM CourseOffering co
-JOIN Course c ON co.CourseID = c.CourseID
-WHERE co.OfferingID = @OfferingID
-
-IF (@CurrentCredits + @CourseCredits) > @MaxCredits
-BEGIN
-    SELECT 'CREDIT_LIMIT'
-    ROLLBACK
-    RETURN
-END
-
-INSERT INTO Enrollment (StudentID, OfferingID, Status)
-VALUES (@StudentID, @OfferingID, 'Enrolled')
-
-INSERT INTO AddDropHistory (StudentID, OfferingID, ActionType, RequestStatus, ApprovedDate)
-VALUES (@StudentID, @OfferingID, 'Add', 'Approved', GETDATE())
-
-COMMIT
-
-SELECT 'SUCCESS'
-
-END TRY
-BEGIN CATCH
-
-IF @@TRANCOUNT > 0
-ROLLBACK
-
-SELECT 'ERROR'
-
-END CATCH
 END
 GO
 
