@@ -132,7 +132,7 @@
                 </div>
 
                 <div class="card">
-                    <a href="Invoice.aspx">Invoice</a>
+                    <a href="InvoiceHistory.aspx">Invoice</a>
                     <p>View invoices and adjustment notes.</p>
                 </div>
 

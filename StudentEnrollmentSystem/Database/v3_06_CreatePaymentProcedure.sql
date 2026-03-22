@@ -7,13 +7,26 @@ CREATE OR ALTER PROCEDURE sp_GetStudentInvoices
 AS
 BEGIN
     SELECT 
-        InvoiceID,
-        InvoiceNumber,
-        TotalAmount,
-        Status,
-        DueDate
-    FROM Invoice
-    WHERE StudentID = @StudentID
+        i.InvoiceID,
+        i.InvoiceNumber,
+        i.IssueDate,
+        i.DueDate,
+        i.TotalAmount,
+        ISNULL(SUM(p.Amount),0) AS PaidAmount,
+        (i.TotalAmount - ISNULL(SUM(p.Amount),0)) AS Balance,
+        i.Status
+    FROM Invoice i
+    LEFT JOIN Payment p
+        ON i.InvoiceID = p.InvoiceID
+        AND p.Status = 'Completed'
+    WHERE i.StudentID = @StudentID
+    GROUP BY
+        i.InvoiceID,
+        i.InvoiceNumber,
+        i.IssueDate,
+        i.DueDate,
+        i.TotalAmount,
+        i.Status
     ORDER BY IssueDate DESC
 END
 GO
@@ -87,22 +100,42 @@ END
 GO
 
 -- Get Student Payment History --
-CREATE OR ALTER PROCEDURE sp_GetPaymentHistory
+CREATE OR ALTER PROCEDURE sp_GetStudentPaymentHistory
     @StudentID INT
 AS
 BEGIN
     SELECT 
+        p.PaymentID,
         i.InvoiceNumber,
         p.Amount,
         p.PaymentMethod,
         p.Status,
-        p.PaymentDate,
-        r.ReceiptNumber
+        p.PaymentDate
     FROM Payment p
     JOIN Invoice i ON p.InvoiceID = i.InvoiceID
-    LEFT JOIN Receipt r ON p.PaymentID = r.PaymentID
     WHERE p.StudentID = @StudentID
+    AND p.Status = 'Completed'
     ORDER BY p.PaymentDate DESC
+END
+GO
+
+-- Get Student Receipt --
+CREATE OR ALTER PROCEDURE sp_GetReceiptDetails
+    @PaymentID INT
+AS
+BEGIN
+    SELECT 
+        r.ReceiptNumber,
+        i.InvoiceNumber,
+        p.Amount,
+        p.PaymentMethod,
+        p.PaymentDate,
+        p.TransactionID
+    FROM Receipt r
+    JOIN Payment p ON r.PaymentID = p.PaymentID
+    JOIN Invoice i ON p.InvoiceID = i.InvoiceID
+    WHERE p.PaymentID = @PaymentID
+    AND p.Status = 'Completed'
 END
 GO
 
@@ -152,6 +185,31 @@ BEGIN
         SET TotalAmount = TotalAmount + @CourseFee
         WHERE InvoiceID = @InvoiceID;
     END
+END
+GO
+
+-- Get Student Adjustment --
+CREATE OR ALTER PROCEDURE sp_GetStudentAdjustmentHistory
+    @StudentID INT
+AS
+BEGIN
+    SELECT 
+        r.ReceiptNumber,
+        a.AdjustmentType,
+        CASE
+            WHEN a.AdjustmentType = 'Refund'
+                THEN -a.Amount
+            ELSE a.Amount
+        END AS Amount,
+        a.Reason,
+        a.AdjustmentDate,
+        ad.FullName AS ApprovedByName
+    FROM AdjustmentNote a
+    JOIN Payment p ON a.PaymentID = p.PaymentID
+    JOIN Receipt r ON p.PaymentID = r.PaymentID
+    JOIN Administrator ad ON a.ApprovedBy = ad.AdminID
+    WHERE p.StudentID = @StudentID
+    ORDER BY a.AdjustmentDate DESC
 END
 GO
 

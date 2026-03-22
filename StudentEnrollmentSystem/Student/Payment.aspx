@@ -56,21 +56,6 @@
             <asp:Button ID="btnPay" runat="server" Text="Pay Now"
                 OnClick="btnPay_Click" />
         </asp:Panel>
-
-        <hr />
-
-        <h3>Payment History</h3>
-
-        <asp:GridView ID="gvPayment" runat="server" AutoGenerateColumns="False">
-            <Columns>
-                <asp:BoundField DataField="InvoiceNumber" HeaderText="Invoice" />
-                <asp:BoundField DataField="Amount" HeaderText="Paid Amount" />
-                <asp:BoundField DataField="PaymentMethod" HeaderText="Method" />
-                <asp:BoundField DataField="Status" HeaderText="Status" />
-                <asp:BoundField DataField="PaymentDate" HeaderText="Date" />
-                <asp:BoundField DataField="ReceiptNumber" HeaderText="Receipt" />
-            </Columns>
-        </asp:GridView>
     </form>
 </body>
 </html>

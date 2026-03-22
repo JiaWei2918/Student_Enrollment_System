@@ -22,7 +22,6 @@ namespace StudentEnrollmentSystem.Student
             if (!IsPostBack)
             {
                 LoadInvoices();
-                LoadPayments();
             }
         }
 
@@ -43,26 +42,6 @@ namespace StudentEnrollmentSystem.Student
 
                 gvInvoice.DataSource = dt;
                 gvInvoice.DataBind();
-            }
-        }
-
-        private void LoadPayments()
-        {
-            int studentID = Convert.ToInt32(Session["StudentID"]);
-
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("sp_GetPaymentHistory", conn))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@StudentID", studentID);
-
-                conn.Open();
-
-                DataTable dt = new DataTable();
-                dt.Load(cmd.ExecuteReader());
-
-                gvPayment.DataSource = dt;
-                gvPayment.DataBind();
             }
         }
 
@@ -108,6 +87,7 @@ namespace StudentEnrollmentSystem.Student
                 {
                     lblMsg.CssClass = "success";
                     lblMsg.Text = "Payment successful!";
+                    Response.Redirect("PaymentHistory.aspx");
                 }
                 else if (result == "FAILED")
                 {
@@ -130,7 +110,6 @@ namespace StudentEnrollmentSystem.Student
             txtAmount.Text = "";
 
             LoadInvoices();
-            LoadPayments();
         }
     }
 }
