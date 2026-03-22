@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -184,49 +185,70 @@ namespace StudentEnrollmentSystem.Student
             }
         }
 
-        protected void gvCourses_RowCommand(object sender, GridViewCommandEventArgs e)
+        protected void chkSelectAll_CheckedChanged(object sender, EventArgs e)
         {
-            if (e.CommandName != "Enroll") return;
+            foreach (GridViewRow row in gvCourses.Rows)
+            {
+                CheckBox chk = (CheckBox)row.FindControl("chkSelect");
+                chk.Checked = ((CheckBox)sender).Checked;
+            }
+        }
 
+        protected void btnEnrollSelected_Click(object sender, EventArgs e)
+        {
             try
             {
-                int offeringID = Convert.ToInt32(e.CommandArgument);
                 int studentID = Convert.ToInt32(Session["StudentID"]);
+                List<int> selectedOfferings = new List<int>();
+
+                foreach (GridViewRow row in gvCourses.Rows)
+                {
+                    CheckBox chk = (CheckBox)row.FindControl("chkSelect");
+                    HiddenField hf = (HiddenField)row.FindControl("hfOfferingID");
+
+                    if (chk.Checked)
+                        selectedOfferings.Add(Convert.ToInt32(hf.Value));
+                }
+
+                if (selectedOfferings.Count == 0)
+                {
+                    ShowError("Please select at least one courses.");
+                    return;
+                }
 
                 using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_EnrollCourse", conn))
+                using (SqlCommand cmd = new SqlCommand("sp_EnrollCoursesBatch", conn))
                 {
-                    conn.Open();
-
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    cmd.Parameters.Add("@OfferingID", SqlDbType.Int).Value = offeringID;
+                    cmd.Parameters.Add("@OfferingIDs", SqlDbType.VarChar).Value = string.Join(",", selectedOfferings);
 
-                    object resultobj = cmd.ExecuteScalar();
-                    string result = resultobj?.ToString() ?? "ERROR";
+                    conn.Open();
+
+                    string result = cmd.ExecuteScalar()?.ToString();
 
                     switch (result)
                     {
                         case "SUCCESS":
                             lblMessage.ForeColor = System.Drawing.Color.Green;
-                            lblMessage.Text = "Course enrolled successfully.";
+                            lblMessage.Text = "Enrollment successful.";
                             break;
 
                         case "FULL":
-                            ShowError("Course is already full.");
-                            break;
-
-                        case "ALREADY_ENROLLED":
-                            ShowError("You already enrolled in this course.");
+                            ShowError("One or more courses are full.");
                             break;
 
                         case "CREDIT_LIMIT":
                             ShowError("Credit limit exceeded.");
                             break;
 
-                        case "ADD_CLOSED":
-                            ShowError("Enrollment period is closed.");
+                        case "CLASH":
+                            ShowError("Timetable clash detected.");
+                            break;
+
+                        case "NO_NEW_COURSE":
+                            ShowError("No new course enrolled.");
                             break;
 
                         default:
@@ -250,12 +272,11 @@ namespace StudentEnrollmentSystem.Student
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
                 int seatsLeft = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "SeatsLeft"));
-                Button btn = (Button)e.Row.FindControl("btnEnroll");
+                CheckBox chk = (CheckBox)e.Row.FindControl("chkSelect");
 
                 if (seatsLeft <= 0)
                 {
-                    btn.Enabled = false;
-                    btn.Text = "Full";
+                    chk.Enabled = false;
                 }
             }
         }
