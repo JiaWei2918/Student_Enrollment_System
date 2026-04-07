@@ -61,7 +61,7 @@ BEGIN
     DECLARE @Random INT = ABS(CHECKSUM(NEWID())) % 100
     DECLARE @Status VARCHAR(20)
 
-    IF @Random < 80
+    IF @Random < 85
         SET @Status = 'Completed'
     ELSE
         SET @Status = 'Failed'
@@ -82,9 +82,17 @@ BEGIN
         VALUES
         (@PaymentID, 'RCPT-' + FORMAT(GETDATE(), 'yyyyMMddHHmmss'), @Amount, @PaymentMethod);
 
-        IF (@Paid + @Amount = @Total)
+        SET @Paid = @Paid + @Amount
+
+        IF @Paid = @Total
         BEGIN
             UPDATE Invoice SET Status = 'Paid'
+            WHERE InvoiceID = @InvoiceID;
+        END
+        ELSE IF @Paid < @Total
+        BEGIN
+            UPDATE Invoice
+            SET Status = 'Issued'
             WHERE InvoiceID = @InvoiceID;
         END
     END
