@@ -1,6 +1,61 @@
 USE StudentEnrollmentSystem;
 GO
 
+-- Get Student Statement --
+CREATE OR ALTER PROCEDURE sp_GetStudentStatement
+    @StudentID INT
+AS
+BEGIN
+    SELECT *
+    FROM
+    (
+        SELECT
+            i.IssueDate AS TransDate,
+            'Invoice' AS TransType,
+            i.InvoiceNumber AS Reference,
+            i.TotalAmount AS Debit,
+            0 AS Credit
+        FROM Invoice i
+        WHERE i.StudentID = @StudentID
+
+        UNION ALL
+
+        SELECT
+            p.PaymentDate,
+            'Payment',
+            r.ReceiptNumber,
+            0,
+            p.Amount
+        FROM Payment p
+        JOIN Receipt r ON p.PaymentID = r.PaymentID
+        WHERE p.StudentID = @StudentID
+        AND p.Status = 'Completed'
+
+        UNION ALL
+
+        SELECT
+            a.AdjustmentDate,
+            a.AdjustmentType,
+            r.ReceiptNumber,
+            CASE 
+                WHEN a.AdjustmentType = 'Additional Charge' THEN a.Amount
+                WHEN a.AdjustmentType = 'Correction' AND a.Amount > 0 THEN a.Amount
+                ELSE 0
+            END,
+            CASE 
+                WHEN a.AdjustmentType = 'Refund' THEN a.Amount
+                WHEN a.AdjustmentType = 'Correction' AND a.Amount < 0 THEN ABS(a.Amount)
+                ELSE 0
+            END
+        FROM AdjustmentNote a
+        JOIN Payment p ON a.PaymentID = p.PaymentID
+        JOIN Receipt r ON p.PaymentID = r.PaymentID
+        WHERE p.StudentID = @StudentID
+    ) t
+    ORDER BY TransDate, TransType, Reference
+END
+GO
+
 -- Get Student Timetable --
 CREATE OR ALTER PROCEDURE sp_GetStudentTimetable
     @StudentID INT,
