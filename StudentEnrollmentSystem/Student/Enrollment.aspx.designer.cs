@@ -15,15 +15,6 @@ namespace StudentEnrollmentSystem.Student
     {
 
         /// <summary>
-        /// form1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
-        /// <summary>
         /// lblStudentName control.
         /// </summary>
         /// <remarks>
@@ -51,6 +42,15 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Label lblAddPeriod;
 
         /// <summary>
+        /// lblEnrolledCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEnrolledCount;
+
+        /// <summary>
         /// lblTotalCredits control.
         /// </summary>
         /// <remarks>
@@ -58,6 +58,15 @@ namespace StudentEnrollmentSystem.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalCredits;
+
+        /// <summary>
+        /// lblMaxCredits control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblMaxCredits;
 
         /// <summary>
         /// chkSelectAll control.
@@ -87,15 +96,6 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Button btnEnrollSelected;
 
         /// <summary>
-        /// gvMyCourses control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvMyCourses;
-
-        /// <summary>
         /// lblMessage control.
         /// </summary>
         /// <remarks>
@@ -103,5 +103,14 @@ namespace StudentEnrollmentSystem.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMessage;
+
+        /// <summary>
+        /// gvMyCourses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView gvMyCourses;
     }
 }

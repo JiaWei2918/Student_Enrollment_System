@@ -236,15 +236,20 @@ SELECT
     co.OfferingID,
     c.CourseCode,
     c.CourseName,
+    c.CreditHours,
+    s.SemesterName,   
     co.Capacity,
     e.Status,
-    e.EnrollmentDate
+    e.EnrollmentDate AS EnrolledDate,
+    COUNT(*) OVER() AS TotalEnrolled,
+    SUM(c.CreditHours) OVER() AS TotalCredits
 FROM Enrollment e
 JOIN CourseOffering co ON e.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
 JOIN Semester s ON co.SemesterID = s.SemesterID
 WHERE e.StudentID = @StudentID
 AND s.Status = 'Active'
+AND e.Status = 'Enrolled'
 
 ORDER BY e.EnrollmentDate DESC
 
@@ -268,7 +273,10 @@ SELECT
     h.ActionDate,
     h.RequestStatus,
     a.FullName AS ApprovedByName,
-    h.ApprovedDate
+    h.ApprovedDate,
+    COUNT(*) OVER() AS TotalActions,
+    SUM(CASE WHEN h.ActionType = 'Add' THEN 1 ELSE 0 END) OVER() AS TotalAdded,
+    SUM(CASE WHEN h.ActionType = 'Drop' THEN 1 ELSE 0 END) OVER() AS TotalDropped
 FROM AddDropHistory h
 JOIN CourseOffering co ON h.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID

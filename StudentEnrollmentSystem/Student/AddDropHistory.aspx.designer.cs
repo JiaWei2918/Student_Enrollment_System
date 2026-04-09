@@ -24,12 +24,39 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Label lblMessage;
 
         /// <summary>
-        /// gvHistory control.
+        /// lblTotalActions control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvHistory;
+        protected global::System.Web.UI.WebControls.Label lblTotalActions;
+
+        /// <summary>
+        /// lblTotalAdded control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTotalAdded;
+
+        /// <summary>
+        /// lblTotalDropped control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTotalDropped;
+
+        /// <summary>
+        /// phHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phHistory;
     }
 }

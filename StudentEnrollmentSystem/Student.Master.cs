@@ -23,8 +23,6 @@ namespace StudentEnrollmentSystem
 
             string initials = GetInitials(fullName);
             lblAvatar.Text = initials;
-
-            SetActiveMenu();
         }
 
         private string GetInitials(string fullName)
@@ -36,33 +34,6 @@ namespace StudentEnrollmentSystem
                 return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
             else
                 return parts[0][0].ToString().ToUpper();
-        }
-
-        private void SetActiveMenu()
-        {
-            string page = System.IO.Path.GetFileName(Request.Path);
-
-            switch (page)
-            {
-                case "Dashboard.aspx":
-                    menuDashboard.Attributes["class"] = "active";
-                    break;
-                case "Enrollment.aspx":
-                    menuEnroll.Attributes["class"] = "active";
-                    break;
-                case "AddDrop.aspx":
-                    menuAddDrop.Attributes["class"] = "active";
-                    break;
-                case "AddDropHistory.aspx":
-                    menuHistory.Attributes["class"] = "active";
-                    break;
-                case "Payment.aspx":
-                    menuPayment.Attributes["class"] = "active";
-                    break;
-                case "UpdateProfile.aspx":
-                    menuProfile.Attributes["class"] = "active";
-                    break;
-            }
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)

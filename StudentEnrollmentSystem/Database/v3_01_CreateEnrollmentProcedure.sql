@@ -20,7 +20,25 @@ SELECT
     CASE
         WHEN (co.Capacity - COUNT(e.EnrollmentID)) < 0 THEN 0
         ELSE (co.Capacity - COUNT(e.EnrollmentID))
-    END AS SeatsLeft
+    END AS SeatsLeft,
+
+    CASE 
+        WHEN co.Capacity > 0 
+            THEN CAST(
+                    (co.Capacity - COUNT(e.EnrollmentID)) AS FLOAT
+                 ) / co.Capacity * 100
+        ELSE 0 
+    END AS SeatPct,
+
+    CASE
+        WHEN (co.Capacity - COUNT(e.EnrollmentID)) <= 0 
+            THEN 'full'
+        WHEN co.Capacity > 0 AND 
+             CAST(co.Capacity - COUNT(e.EnrollmentID) AS FLOAT) 
+             / co.Capacity * 100 <= 15 
+            THEN 'limited'
+        ELSE 'available'
+    END AS SeatStatus
 FROM CourseOffering co
 JOIN Course c ON co.CourseID = c.CourseID
 JOIN Semester s ON co.SemesterID = s.SemesterID
@@ -39,12 +57,12 @@ AND NOT EXISTS (
 )
 
 GROUP BY
-co.OfferingID,
-c.CourseCode,
-c.CourseName,
-c.CreditHours,
-s.SemesterName,
-co.Capacity
+    co.OfferingID,
+    c.CourseCode,
+    c.CourseName,
+    c.CreditHours,
+    s.SemesterName,
+    co.Capacity
 
 ORDER BY c.CourseCode
 

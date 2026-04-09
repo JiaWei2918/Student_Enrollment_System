@@ -268,13 +268,13 @@
                         </a>
 
                         <div class="menu-section">Enquiry</div>
-                        <a href="~/Student/Enquiry.aspx">
+                        <a href="Enquiry.aspx">
                             <i class="fa fa-envelope"></i><span>Contact Us</span>
                         </a>
-                        <a href="~/Student/TimetableMatching.aspx">
+                        <a href="TimetableMatching.aspx">
                             <i class="fa fa-calendar"></i><span>Timetable Matching</span>
                         </a>
-                        <a href="~/Student/TeachingEvaluation.aspx">
+                        <a href="TeachingEvaluation.aspx">
                             <i class="fa fa-star"></i><span>Student Evaluation</span>
                         </a>
 
@@ -345,10 +345,20 @@
 
         (function () {
             var path = window.location.pathname.toLowerCase();
+            var currentPage = path.split('/').pop().replace('.aspx', '');
+
             var links = document.querySelectorAll('.menu a');
             links.forEach(function (a) {
                 var href = a.getAttribute('href');
-                if (href && path.indexOf(href.toLowerCase().replace('~/', '').replace('.aspx', '')) > -1) {
+                if (!href) return;
+
+                var linkPage = href.toLowerCase()
+                    .replace('~/', '')
+                    .split('/')
+                    .pop()
+                    .replace('.aspx', '');
+
+                if (currentPage === linkPage) {
                     a.classList.add('active');
                 }
             });
