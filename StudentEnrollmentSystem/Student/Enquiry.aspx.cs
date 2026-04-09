@@ -29,25 +29,25 @@ namespace StudentEnrollmentSystem.Student
 
             if (ddlSubject.SelectedValue == "")
             {
-                lblMsg.Text = "Please select a subject.";
+                ShowMessage("Please select a category.", isError: true);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtMessage.Text))
             {
-                lblMsg.Text = "Message cannot be empty.";
+                ShowMessage("Message cannot be empty.", isError: true);
                 return;
             }
 
-            if (txtMessage.Text.Length < 10)
+            if (txtMessage.Text.Trim().Length < 10)
             {
-                lblMsg.Text = "Message too short.";
+                ShowMessage("Message is too short (minimum 10 characters).", isError: true);
                 return;
             }
 
-            if (txtMessage.Text.Length > 500)
+            if (txtMessage.Text.Trim().Length > 500)
             {
-                lblMsg.Text = "Message too long (max 500).";
+                ShowMessage("Message is too long (maximum 500 characters).", isError: true);
                 return;
             }
 
@@ -67,7 +67,7 @@ namespace StudentEnrollmentSystem.Student
 
                     if (count > 0)
                     {
-                        lblMsg.Text = "You already submitted this enquiry recently.";
+                        ShowMessage("You already submitted this enquiry recently. Please wait a few minutes before resubmitting.", isError: true);
                         return;
                     }
                 }
@@ -84,8 +84,7 @@ namespace StudentEnrollmentSystem.Student
                 }
             }
 
-            lblMsg.ForeColor = System.Drawing.Color.Green;
-            lblMsg.Text = "Enquiry submitted successfully.";
+            ShowMessage("Your message has been sent! We'll get back to you within 24–48 hours.", isError: false);
 
             txtMessage.Text = "";
             ddlSubject.SelectedIndex = 0;
@@ -108,25 +107,38 @@ namespace StudentEnrollmentSystem.Student
                 DataTable dt = new DataTable();
                 dt.Load(cmd.ExecuteReader());
 
-                gvEnquiry.DataSource = dt;
-                gvEnquiry.DataBind();
-
                 if (dt.Rows.Count == 0)
                 {
-                    lblMsg.Text = "No enquiries yet.";
+                    gvEnquiry.Visible = false;
+                    pnlEmpty.Visible = true;
+                }
+                else
+                {
+                    gvEnquiry.Visible = true;
+                    pnlEmpty.Visible = false;
+                    gvEnquiry.DataSource = dt;
+                    gvEnquiry.DataBind();
                 }
             }
         }
 
-        public string GetStatusColor (string status)
+        private void ShowMessage(string text, bool isError)
+        {
+            lblMsg.ForeColor = isError
+                ? System.Drawing.Color.Red
+                : System.Drawing.Color.Green;
+            lblMsg.Text = text;
+        }
+
+        public string GetStatusBadge(string status)
         {
             switch (status)
             {
-                case "Pending": return "orange";
-                case "In Progress": return "blue";
-                case "Resolved": return "green";
-                case "Closed": return "gray";
-                default: return "black";
+                case "Pending": return "<span class=\"badge badge-pending\">Pending</span>";
+                case "In Progress": return "<span class=\"badge badge-inprogress\">In Progress</span>";
+                case "Resolved": return "<span class=\"badge badge-resolved\">Resolved</span>";
+                case "Closed": return "<span class=\"badge badge-closed\">Closed</span>";
+                default: return $"<span class=\"badge badge-default\">{status}</span>";
             }
         }
     }
