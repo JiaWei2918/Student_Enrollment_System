@@ -42,6 +42,42 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Button btnSearch;
 
         /// <summary>
+        /// pnlNoClash control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoClash;
+
+        /// <summary>
+        /// pnlNoResult control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoResult;
+
+        /// <summary>
+        /// pnlResults control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlResults;
+
+        /// <summary>
+        /// lblResultCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblResultCount;
+
+        /// <summary>
         /// gvCourses control.
         /// </summary>
         /// <remarks>
@@ -49,5 +85,14 @@ namespace StudentEnrollmentSystem.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvCourses;
+
+        /// <summary>
+        /// pnlDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDefault;
     }
 }

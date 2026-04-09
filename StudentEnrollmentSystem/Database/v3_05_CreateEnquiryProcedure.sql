@@ -59,13 +59,14 @@ BEGIN
         co.Lecturer,
 
         STRING_AGG(
-            cs.DayOfWeek + ' ' + 
+            RTRIM(cs.DayOfWeek) + ' ' + 
             CONVERT(VARCHAR(5), cs.StartTime, 108) + '-' +
             CONVERT(VARCHAR(5), cs.EndTime, 108),
             ', '
         ) AS Schedule,
         
-        MIN(cs.StartTime) AS SortTime
+        MIN(cs.StartTime) AS SortTime,
+        COUNT(*) OVER() AS TotalAvailable
     FROM CourseOffering co
     INNER JOIN Course c ON co.CourseID = c.CourseID
     INNER JOIN CourseSchedule cs ON co.OfferingID = cs.OfferingID
