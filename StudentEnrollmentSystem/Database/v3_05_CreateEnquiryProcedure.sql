@@ -184,7 +184,8 @@ BEGIN
         te.LecturerRating,
         te.CourseRating,
         te.Comment,
-        te.SubmittedAt
+        te.SubmittedAt,
+        COUNT(*) OVER() AS TotalCompleted
     FROM TeachingEvaluation te
     JOIN CourseOffering co ON te.OfferingID = co.OfferingID
     JOIN Course c ON co.CourseID = c.CourseID

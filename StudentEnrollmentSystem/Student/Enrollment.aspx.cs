@@ -1,5 +1,4 @@
-﻿using Microsoft.Ajax.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -291,9 +290,9 @@ namespace StudentEnrollmentSystem.Student
         {
             double pct = pctObj == DBNull.Value ? 0 : Convert.ToDouble(pctObj);
             pct = Math.Max(0, Math.Min(100, pct));
-            string color = pct > 40 ? "#10b981"   // green  — plenty
-                         : pct > 15 ? "#f59e0b"   // amber  — limited
-                         : "#ef4444";   // red    — almost full / full
+            string color = pct > 40 ? "#10b981"
+                         : pct > 15 ? "#f59e0b"
+                         : "#ef4444";
             return $"width:{pct:0.#}%; background:{color};";
         }
 

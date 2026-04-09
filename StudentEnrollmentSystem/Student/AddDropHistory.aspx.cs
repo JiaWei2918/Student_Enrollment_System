@@ -80,14 +80,11 @@ namespace StudentEnrollmentSystem.Student
                 List<DataRow> rows = group.Value;
 
                 html.Append("<div class='semester-group'>");
-
-                // Semester heading
                 html.Append("<div class='semester-heading'>");
                 html.Append("<i class='fa fa-calendar'></i>");
                 html.AppendFormat("<span>{0}</span>", semester);
                 html.Append("</div>");
 
-                // Cards
                 foreach (DataRow row in rows)
                 {
                     string actionType = row["ActionType"]?.ToString() ?? "";
@@ -102,20 +99,16 @@ namespace StudentEnrollmentSystem.Student
 
                     bool isAdd = actionType == "Add";
 
-                    // Card
                     html.Append("<div class='history-card'>");
 
-                    // Action icon
                     html.AppendFormat(
                         "<div class='action-icon {0}'><i class='fa {1}'></i></div>",
                         isAdd ? "action-add" : "action-drop",
                         isAdd ? "fa-plus" : "fa-minus"
                     );
 
-                    // Body
                     html.Append("<div class='hc-body'>");
 
-                    // Top row: action label + date
                     html.Append("<div class='hc-top'>");
                     html.Append("<div>");
                     html.AppendFormat(
@@ -127,9 +120,8 @@ namespace StudentEnrollmentSystem.Student
                     html.AppendFormat("<div class='hc-course-name'>{0}</div>", courseName);
                     html.Append("</div>");
                     html.AppendFormat("<div class='hc-date'>{0}</div>", actionDate);
-                    html.Append("</div>"); // hc-top
+                    html.Append("</div>");
 
-                    // Meta row: credits + status
                     html.Append("<div class='hc-meta'>");
                     html.AppendFormat(
                         "<div class='hc-meta-item'><i class='fa fa-book'></i><span>{0} Credit{1}</span></div>",
@@ -140,9 +132,8 @@ namespace StudentEnrollmentSystem.Student
                         "<div class='hc-meta-item'>{0}</div>",
                         GetStatusBadge(requestStatus)
                     );
-                    html.Append("</div>"); // hc-meta
+                    html.Append("</div>");
 
-                    // Approved by (only if available)
                     if (!string.IsNullOrWhiteSpace(approvedBy))
                     {
                         html.Append("<div class='hc-approved'>");
@@ -155,11 +146,11 @@ namespace StudentEnrollmentSystem.Student
                         html.Append("</div>");
                     }
 
-                    html.Append("</div>"); // hc-body
-                    html.Append("</div>"); // history-card
+                    html.Append("</div>");
+                    html.Append("</div>"); 
                 }
 
-                html.Append("</div>"); // semester-group
+                html.Append("</div>");
                 html.Append("<div style='height:8px;'></div>");
             }
 
