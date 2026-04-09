@@ -28,16 +28,15 @@ namespace StudentEnrollmentSystem.Student
             }
         }
 
-        private void ShowError(string message, Exception ex = null)
+        private void ShowMessage(string message, bool isError = true, Exception ex = null)
         {
-            lblMessage.ForeColor = System.Drawing.Color.Red;
+            lblMessage.ForeColor = isError
+                 ? System.Drawing.Color.Red
+                 : System.Drawing.Color.Green;
             lblMessage.Text = message;
 
-            // Log error for debugging
             if (ex != null)
-            {
                 System.Diagnostics.Debug.WriteLine("ERROR: " + ex.Message);
-            }
         }
 
         private void LoadActiveSemester()
@@ -112,11 +111,11 @@ namespace StudentEnrollmentSystem.Student
             }
             catch (SqlException ex)
             {
-                ShowError("Database error while loading courses.", ex);
+                ShowMessage("Database error while loading courses.", true, ex);
             }
             catch (Exception ex)
             {
-                ShowError("Unexpected system error while loading courses.", ex);
+                ShowMessage("Unexpected system error while loading courses.", true, ex);
             }
         }
 
@@ -134,8 +133,18 @@ namespace StudentEnrollmentSystem.Student
 
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
-
                     da.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        lblEnrolledCount.Text = dt.Rows[0]["TotalEnrolled"].ToString();
+                        lblTotalCredits.Text = dt.Rows[0]["TotalCredits"].ToString();
+                    }
+                    else
+                    {
+                        lblEnrolledCount.Text = "0";
+                        lblTotalCredits.Text = "0";
+                    }
 
                     gvMyCourses.DataSource = dt;
                     gvMyCourses.DataBind();
@@ -143,11 +152,26 @@ namespace StudentEnrollmentSystem.Student
             }
             catch (SqlException ex)
             {
-                ShowError("Database error while loading enrolled courses.", ex);
+                ShowMessage("Database error while loading enrolled courses.", true, ex);
             }
             catch (Exception ex)
             {
-                ShowError("Unexpected syste error while loading enrolled courses.", ex);
+                ShowMessage("Unexpected syste error while loading enrolled courses.", true, ex);
+            }
+        }
+
+        protected void gvAvailable_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                int seatsLeft = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "SeatsLeft"));
+                CheckBox chk = (CheckBox)e.Row.FindControl("chkAdd");
+
+                if (seatsLeft <= 0 && chk != null)
+                {
+                    chk.Enabled = false;
+                    e.Row.CssClass += " row-full";
+                }
             }
         }
 
@@ -174,13 +198,13 @@ namespace StudentEnrollmentSystem.Student
                 CheckBox chk = (CheckBox)row.FindControl(chkName);
                 HiddenField hf = (HiddenField)row.FindControl("hfOfferingID");
 
-                if (chk != null && chk.Checked)
+                if (chk != null && chk.Checked && hf != null)
                     list.Add(Convert.ToInt32(hf.Value));
             }
 
             if (list.Count == 0)
             {
-                ShowError("Please select at least one course.");
+                ShowMessage("Please select at least one course.", true);
                 return;
             }
 
@@ -197,19 +221,73 @@ namespace StudentEnrollmentSystem.Student
 
                 string result = cmd.ExecuteScalar()?.ToString();
 
-                if (result == "SUCCESS")
+                switch (result)
                 {
-                    lblMessage.ForeColor = System.Drawing.Color.Green;
-                    lblMessage.Text = action + " successful.";
-                }
-                else
-                {
-                    ShowError(result);
+                    case "SUCCESS":
+                        string verb = action == "ADD" ? "added" : "dropped";
+                        ShowMessage($"Course(s) successfully {verb}.", isError: false);
+                        break;
+                    case "FULL":
+                        ShowMessage("One or more selected courses are full.", true);
+                        break;
+                    case "CREDIT_LIMIT":
+                        ShowMessage("Credit limit exceeded. Please deselect some courses.", true);
+                        break;
+                    case "CLASH":
+                        ShowMessage("Timetable clash detected. Please choose non-overlapping courses.", true);
+                        break;
+                    case "DROP_PERIOD_CLOSED":
+                        ShowMessage("The drop period for this semester has ended.", true);
+                        break;
+                    case "ADD_PERIOD_CLOSED":
+                        ShowMessage("The add period for this semester has ended.", true);
+                        break;
+                    default:
+                        ShowMessage(!string.IsNullOrEmpty(result) ? result : "Action failed. Please try again.", true);
+                        break;
                 }
             }
 
             LoadAvailableCourses();
             LoadMyCourses();
+        }
+
+        protected string GetSeatBarStyle(object pctObj)
+        {
+            double pct = pctObj == DBNull.Value ? 0 : Convert.ToDouble(pctObj);
+            pct = Math.Max(0, Math.Min(100, pct));
+            string color = pct > 40 ? "#10b981"
+                         : pct > 15 ? "#f59e0b"
+                         : "#ef4444";
+            return $"width:{pct:0.#}%; background:{color};";
+        }
+
+        protected string GetSeatBadge(object statusObj)
+        {
+            switch (statusObj?.ToString())
+            {
+                case "full": return "<span class=\"badge badge-red\">Full</span>";
+                case "limited": return "<span class=\"badge badge-amber\">Limited</span>";
+                default: return "<span class=\"badge badge-green\">Available</span>";
+            }
+        }
+
+        protected string GetStatusBadge(object statusObj)
+        {
+            switch (statusObj?.ToString()?.ToLower())
+            {
+                case "enrolled": return "<span class=\"badge badge-green\">Enrolled</span>";
+                case "pending": return "<span class=\"badge badge-amber\">Pending</span>";
+                case "dropped": return "<span class=\"badge badge-red\">Dropped</span>";
+                case "completed": return "<span class=\"badge badge-blue\">Completed</span>";
+                default: return $"<span class=\"badge badge-gray\">{statusObj}</span>";
+            }
+        }
+
+        protected string FormatDate(object dateObj)
+        {
+            if (dateObj == null || dateObj == DBNull.Value) return "—";
+            return Convert.ToDateTime(dateObj).ToString("dd MMM yyyy");
         }
     }
 }

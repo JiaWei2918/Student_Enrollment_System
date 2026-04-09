@@ -236,15 +236,20 @@ SELECT
     co.OfferingID,
     c.CourseCode,
     c.CourseName,
+    c.CreditHours,
+    s.SemesterName,   
     co.Capacity,
     e.Status,
-    e.EnrollmentDate
+    e.EnrollmentDate AS EnrolledDate,
+    COUNT(*) OVER() AS TotalEnrolled,
+    SUM(c.CreditHours) OVER() AS TotalCredits
 FROM Enrollment e
 JOIN CourseOffering co ON e.OfferingID = co.OfferingID
 JOIN Course c ON co.CourseID = c.CourseID
 JOIN Semester s ON co.SemesterID = s.SemesterID
 WHERE e.StudentID = @StudentID
 AND s.Status = 'Active'
+AND s.Status = 'Enrolled'
 
 ORDER BY e.EnrollmentDate DESC
 
