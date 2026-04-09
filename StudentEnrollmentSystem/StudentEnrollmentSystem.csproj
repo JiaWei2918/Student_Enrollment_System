@@ -134,6 +134,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\globals.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Database\v1_03_CreateLoginProcedure.sql" />
     <Content Include="Database\v1_01_CreateVersionTable.sql" />
@@ -351,6 +352,13 @@
     <Compile Include="Site.Mobile.Master.designer.cs">
       <DependentUpon>Site.Mobile.Master</DependentUpon>
     </Compile>
+    <Compile Include="Student.Master.cs">
+      <DependentUpon>Student.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student.Master.designer.cs">
+      <DependentUpon>Student.Master</DependentUpon>
+    </Compile>
     <Compile Include="Student\AccountSettings.aspx.cs">
       <DependentUpon>AccountSettings.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -457,6 +465,7 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Student.Master" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
