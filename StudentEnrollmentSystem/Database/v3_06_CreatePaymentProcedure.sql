@@ -134,7 +134,11 @@ BEGIN
         p.Amount,
         p.PaymentMethod,
         p.Status,
-        p.PaymentDate
+        p.PaymentDate,
+        COUNT(*) OVER() AS TotalPayments,
+        SUM(p.Amount) OVER() AS TotalPaid,
+        SUM(CASE WHEN YEAR(p.PaymentDate) = YEAR(GETDATE())
+                THEN 1 ELSE 0 END) OVER() AS YearPayments
     FROM Payment p
     JOIN Invoice i ON p.InvoiceID = i.InvoiceID
     WHERE p.StudentID = @StudentID
@@ -166,7 +170,7 @@ GO
 -- Create or Update Invoices --
 CREATE OR ALTER PROCEDURE sp_CreateOrUpdateInvoice
     @StudentID INT,
-    @OfferingID INT,
+    @SemesterID INT,
     @CourseFee DECIMAL(10,2)
 AS
 BEGIN
