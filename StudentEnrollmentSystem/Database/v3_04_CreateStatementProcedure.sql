@@ -6,26 +6,38 @@ CREATE OR ALTER PROCEDURE sp_GetStudentStatement
     @StudentID INT
 AS
 BEGIN
-    SELECT *
-    FROM
+SET NOCOUNT ON;
+    WITH Transactions AS
     (
         SELECT
-            i.IssueDate AS TransDate,
-            'Invoice' AS TransType,
-            i.InvoiceNumber AS Reference,
-            i.TotalAmount AS Debit,
-            0 AS Credit
+            CAST(NULL AS DATE) AS TransDate,
+            'Opening Balance' AS TransType,
+            '' AS Reference,
+            CAST(0 AS DECIMAL(10,2)) AS Debit,
+            CAST(0 AS DECIMAL(10,2)) AS Credit,
+            0 AS SortOrder
+
+        UNION ALL
+
+        SELECT
+            CAST(i.IssueDate AS DATE),
+            'Invoice',
+            i.InvoiceNumber,
+            i.TotalAmount,
+            CAST(0 AS DECIMAL(10,2)),
+            1
         FROM Invoice i
         WHERE i.StudentID = @StudentID
 
         UNION ALL
 
         SELECT
-            p.PaymentDate,
+            CAST(p.PaymentDate AS DATE),
             'Payment',
             r.ReceiptNumber,
-            0,
-            p.Amount
+            CAST(0 AS DECIMAL(10,2)),
+            p.Amount,
+            2
         FROM Payment p
         JOIN Receipt r ON p.PaymentID = r.PaymentID
         WHERE p.StudentID = @StudentID
@@ -34,7 +46,7 @@ BEGIN
         UNION ALL
 
         SELECT
-            a.AdjustmentDate,
+            CAST(a.AdjustmentDate AS DATE),
             a.AdjustmentType,
             r.ReceiptNumber,
             CASE 
@@ -46,13 +58,30 @@ BEGIN
                 WHEN a.AdjustmentType = 'Refund' THEN a.Amount
                 WHEN a.AdjustmentType = 'Correction' AND a.Amount < 0 THEN ABS(a.Amount)
                 ELSE 0
-            END
+            END,
+            3
         FROM AdjustmentNote a
         JOIN Payment p ON a.PaymentID = p.PaymentID
         JOIN Receipt r ON p.PaymentID = r.PaymentID
         WHERE p.StudentID = @StudentID
-    ) t
-    ORDER BY TransDate, TransType, Reference
+    )
+
+    SELECT
+        TransDate,
+        TransType,
+        Reference,
+        Debit,
+        Credit,
+
+        SUM(Debit - Credit) OVER (
+            ORDER BY TransDate, SortOrder, Reference
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS Balance,
+
+        SUM(Debit)  OVER () AS TotalDebits,
+        SUM(Credit) OVER () AS TotalCredits
+    FROM Transactions
+    ORDER BY TransDate, SortOrder, Reference
 END
 GO
 

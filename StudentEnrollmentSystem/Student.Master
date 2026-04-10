@@ -279,10 +279,10 @@
                         </a>
 
                         <div class="menu-section">Statement</div>
-                        <a href="~/Student/Statement.aspx">
+                        <a href="Statement.aspx">
                             <i class="fa fa-file-text"></i><span>Student Statement</span>
                         </a>
-                        <a href="~/Student/TimeTable.aspx">
+                        <a href="TimeTable.aspx">
                             <i class="fa fa-list-alt"></i><span>Registration Summary</span>
                         </a>
 
@@ -290,10 +290,10 @@
                         <a href="~/Student/Payment.aspx" runat="server" id="menuPayment">
                             <i class="fa fa-credit-card"></i><span>Payment</span>
                         </a>
-                        <a href="~/Student/PaymentHistory.aspx">
+                        <a href="PaymentHistory.aspx">
                             <i class="fa fa-receipt"></i><span>Payment History</span>
                         </a>
-                        <a href="~/Student/InvoiceHistory.aspx">
+                        <a href="InvoiceHistory.aspx">
                             <i class="fa fa-file-invoice"></i><span>Invoice &amp; Adjustment</span>
                         </a>
 

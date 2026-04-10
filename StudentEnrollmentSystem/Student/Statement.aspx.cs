@@ -5,7 +5,6 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Web.UI;
 
 namespace StudentEnrollmentSystem.Student
 {
@@ -42,35 +41,56 @@ namespace StudentEnrollmentSystem.Student
                 DataTable dt = new DataTable();
                 dt.Load(cmd.ExecuteReader());
 
-                decimal balance = 0;
-
-                dt.Columns.Add("Balance", typeof(decimal));
-
-                DataRow opening = dt.NewRow();
-                opening["TransDate"] = DBNull.Value;
-                opening["TransType"] = "Opening Balance";
-                opening["Reference"] = "";
-                opening["Debit"] = 0;
-                opening["Credit"] = 0;
-                dt.Rows.InsertAt(opening, 0);
-
-                foreach (DataRow row in dt.Rows)
+                if (dt.Rows.Count > 0)
                 {
-                    decimal debit = row["Debit"] == DBNull.Value ? 0 : Convert.ToDecimal(row["Debit"]);
-                    decimal credit = row["Credit"] == DBNull.Value ? 0 : Convert.ToDecimal(row["Credit"]);
+                    DataRow last = dt.Rows[dt.Rows.Count - 1];
 
-                    balance += debit;
-                    balance -= credit;
+                    decimal totalDebits = Convert.ToDecimal(last["TotalDebits"]);
+                    decimal totalCredits = Convert.ToDecimal(last["TotalCredits"]);
+                    decimal balance = Convert.ToDecimal(last["Balance"]);
 
-                    row["Balance"] = balance;
+                    lblTotalDebits.Text = totalDebits.ToString("N2");
+                    lblTotalCredits.Text = totalCredits.ToString("N2");
+
+                    string closingText = "RM " + balance.ToString("N2");
+                    lblClosing.Text = closingText;
+                    lblClosingFooter.Text = closingText;
+
+                    if (balance <= 0)
+                    {
+                        lblClosing.CssClass = "sc-green";
+                        lblClosingFooter.CssClass = "closing-zero";
+                    }
+                    else
+                    {
+                        lblClosing.CssClass = "sc-amber";
+                        lblClosingFooter.CssClass = "closing-positive";
+                    }
                 }
 
-                lblClosing.Text = "RM " + balance.ToString("N2");
                 return dt;
             }
         }
         private void LoadStatement()
         {
+            lblStudentName.Text = Session["FullName"]?.ToString() ?? "—";
+            lblStudentID.Text = Session["Username"]?.ToString() ?? "—";
+            lblProgram.Text = Session["Program"]?.ToString() ?? "Computer Science";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT TOP 1 RTRIM(SemesterName) + ' ' + RTRIM(AcademicYear) " +
+                    "FROM Semester WHERE Status = 'Active'", conn))
+                {
+                    conn.Open();
+                    object sem = cmd.ExecuteScalar();
+                    lblSemester.Text = sem?.ToString() ?? "—";
+                }
+            }
+            catch { lblSemester.Text = "—"; }
+
             gvStatement.DataSource = GetStatementData();
             gvStatement.DataBind();
         }
@@ -81,25 +101,36 @@ namespace StudentEnrollmentSystem.Student
 
             using (MemoryStream ms = new MemoryStream())
             {
-                Document pdfDoc = new Document(PageSize.A4, 20f, 20f, 20f, 20f);
+                Document pdfDoc = new Document(PageSize.A4, 20f, 20f, 30f, 20f);
                 PdfWriter.GetInstance(pdfDoc, ms);
                 pdfDoc.Open();
 
-                Paragraph title = new Paragraph("Student Financial Statement", 
-                    FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14));
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
+                var subFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+                var boldFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+
+                Paragraph title = new Paragraph("Student Financial Statement", titleFont);
                 title.Alignment = Element.ALIGN_CENTER;
                 pdfDoc.Add(title);
                 pdfDoc.Add(new Paragraph(" "));
 
+                pdfDoc.Add(new Paragraph("Student: " + lblStudentName.Text, subFont));
+                pdfDoc.Add(new Paragraph("Student ID: " + lblStudentID.Text, subFont));
+                pdfDoc.Add(new Paragraph("Generated: " + DateTime.Now.ToString("dd MMM yyyy"), subFont));
+                pdfDoc.Add(new Paragraph(" "));
+
                 PdfPTable table = new PdfPTable(6);
                 table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 15f, 25f, 20f, 13f, 13f, 14f });
 
-                table.AddCell("Date");
-                table.AddCell("Type");
-                table.AddCell("Reference");
-                table.AddCell("Charge");
-                table.AddCell("Payment");
-                table.AddCell("Balance");
+                string[] headers = { "Date", "Type", "Reference", "Charge", "Payment", "Balance" };
+                foreach (string h in headers)
+                {
+                    PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
+                    cell.BackgroundColor = new BaseColor(248, 250, 252);
+                    cell.Padding = 6;
+                    table.AddCell(cell);
+                }
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -107,17 +138,17 @@ namespace StudentEnrollmentSystem.Student
                         ? ""
                         : Convert.ToDateTime(row["TransDate"]).ToString("dd MMM yyyy");
 
-                    table.AddCell(date);
-                    table.AddCell(row["TransType"].ToString());
-                    table.AddCell(row["Reference"].ToString());
-                    table.AddCell("RM " + Convert.ToDecimal(row["Debit"]).ToString("N2"));
-                    table.AddCell("RM " + Convert.ToDecimal(row["Credit"]).ToString("N2"));
-                    table.AddCell("RM " + Convert.ToDecimal(row["Balance"]).ToString("N2"));
+                    table.AddCell(new Phrase(date, subFont));
+                    table.AddCell(new Phrase(row["TransType"].ToString(), subFont));
+                    table.AddCell(new Phrase(row["Reference"].ToString(), subFont));
+                    table.AddCell(new Phrase("RM " + Convert.ToDecimal(row["Debit"]).ToString("N2"), subFont));
+                    table.AddCell(new Phrase("RM " + Convert.ToDecimal(row["Credit"]).ToString("N2"), subFont));
+                    table.AddCell(new Phrase("RM " + Convert.ToDecimal(row["Balance"]).ToString("N2"), subFont));
                 }
 
                 pdfDoc.Add(table);
                 pdfDoc.Add(new Paragraph(" "));
-                pdfDoc.Add(new Paragraph("Closing Balance: " + lblClosing.Text));
+                pdfDoc.Add(new Paragraph("Closing Balance: " + lblClosing.Text, boldFont));
 
                 pdfDoc.Close();
 
@@ -126,6 +157,30 @@ namespace StudentEnrollmentSystem.Student
                 Response.BinaryWrite(ms.ToArray());
                 Response.End();
             }
+        }
+
+        protected string FormatTransDate(object dateObj)
+        {
+            if (dateObj == null || dateObj == DBNull.Value) return "—";
+            return Convert.ToDateTime(dateObj).ToString("dd MMM yyyy");
+        }
+
+        protected string FormatAmount(object amountObj, string type)
+        {
+            decimal amount = amountObj == null || amountObj == DBNull.Value
+                ? 0 : Convert.ToDecimal(amountObj);
+
+            if (amount == 0)
+                return "<span class='zero-val'>—</span>";
+
+            string css = type == "debit" ? "debit-val" : "credit-val";
+            return $"<span class='{css}'>RM {amount:N2}</span>";
+        }
+
+        protected string FormatDecimal(object val)
+        {
+            if (val == null || val == DBNull.Value) return "0.00";
+            return Convert.ToDecimal(val).ToString("N2");
         }
     }
 }
