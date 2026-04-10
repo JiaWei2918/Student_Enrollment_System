@@ -5,10 +5,10 @@
 <style>
     .tt-wrap { display: flex; flex-direction: column; gap: 28px; }
 
-    /* ── PAGE HEADER ── */
     .page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
     .page-header-left h2 { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
     .page-header-left p  { font-size: 14px; color: #64748b; margin: 0; }
+
     .btn-primary {
         display: inline-flex; align-items: center; gap: 8px;
         padding: 10px 22px;
@@ -18,102 +18,111 @@
         box-shadow: 0 4px 14px rgba(99,102,241,0.3);
         transition: opacity 0.2s, box-shadow 0.2s;
     }
+
     .btn-primary:hover { opacity: 0.9; box-shadow: 0 8px 22px rgba(99,102,241,0.4); }
 
-    /* ── CARD ── */
     .card {
         background: #fff; border-radius: 16px; padding: 28px;
         border: 1px solid rgba(0,0,0,0.06);
         box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     }
+
     .card-title { font-size: 17px; font-weight: 700; color: #0f172a; margin: 0 0 20px; }
 
-    /* ── SEMESTER SELECTOR ── */
     .semester-row { display: flex; align-items: center; gap: 12px; }
     .form-label   { font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap; }
+
     .form-select  {
         padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 12px;
         font-size: 14px; color: #0f172a; background: #f8fafc;
         outline: none; transition: border-color 0.2s, box-shadow 0.2s;
         min-width: 220px;
     }
+
     .form-select:focus {
         border-color: #6366f1;
         box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
         background: #fff;
     }
 
-    /* ── INFO GRID (student + registration details) ── */
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
     .info-section h3 { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 12px; }
+
     .info-row {
         display: flex; justify-content: space-between;
         font-size: 13px; padding: 6px 0;
         border-bottom: 1px solid #f8fafc;
     }
+
     .info-row:last-child { border-bottom: none; }
     .info-label { color: #64748b; }
     .info-value { font-weight: 600; color: #0f172a; }
 
-    /* ── ENROLLED COURSES LIST ── */
     .course-card {
         border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px;
         margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s;
     }
+
     .course-card:last-child { margin-bottom: 0; }
     .course-card:hover { border-color: #c7d2fe; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
     .course-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
     .cc-code  { font-size: 16px; font-weight: 700; color: #0f172a; }
     .cc-name  { font-size: 13px; color: #334155; margin-top: 2px; }
     .cc-meta  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+
     .cc-meta-item {
         display: flex; align-items: center; gap: 7px;
         font-size: 12px; color: #64748b;
     }
+
     .cc-meta-item i { font-size: 12px; color: #94a3b8; }
 
-    /* Badges */
     .badge {
         display: inline-block; padding: 3px 10px;
         border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap;
     }
+
     .badge-blue   { background: #dbeafe; color: #1d4ed8; }
     .badge-purple { background: #ede9fe; color: #6d28d9; }
     .badge-green  { background: #dcfce7; color: #15803d; }
 
-    /* ── WEEKLY TIMETABLE GRID ── */
     .tt-scroll { overflow-x: auto; }
     .gv-grid   { width: 100%; border-collapse: collapse; min-width: 700px; }
+
     .gv-grid th {
         padding: 11px 12px; text-align: center;
         font-size: 12px; font-weight: 700; color: #64748b;
         text-transform: uppercase; letter-spacing: 0.05em;
         background: #f8fafc; border-bottom: 1px solid #e2e8f0;
     }
+
     .gv-grid th.time-col { text-align: left; min-width: 110px; }
     .gv-grid th.today-col { background: #eef2ff; color: #4338ca; }
+
     .gv-grid td {
         padding: 8px 10px; font-size: 13px; color: #334155;
         border-bottom: 1px solid #f1f5f9; vertical-align: top;
         min-height: 64px; min-width: 100px;
     }
+
     .gv-grid tr:hover td { background: #fafbff; }
 
-    /* Time slot cell */
     .time-slot { font-size: 12px; color: #64748b; font-weight: 600; white-space: nowrap; }
 
-    /* Course block inside grid */
     .grid-cell {
         background: linear-gradient(135deg,#eef2ff,#f5f3ff);
         border: 1px solid #c7d2fe; border-radius: 8px;
         padding: 6px 10px; font-size: 12px; color: #3730a3;
         margin-bottom: 4px;
     }
+
     .grid-cell b { display: block; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+
     .grid-cell-today {
         background: linear-gradient(135deg,#fef9c3,#fef3c7);
         border-color: #fbbf24; color: #92400e;
     }
+
     .grid-clash {
         background: #fef2f2; border-color: #fecaca;
         color: #991b1b; font-size: 11px; font-weight: 700;
@@ -121,7 +130,6 @@
         display: inline-block;
     }
 
-    /* ── MESSAGE ── */
     .msg-error {
         display: flex; align-items: center; gap: 10px;
         padding: 14px 18px; border-radius: 12px;
@@ -135,28 +143,27 @@
         color: #92400e; font-size: 14px; font-weight: 600;
     }
 
-    /* ── EMPTY STATE ── */
     .empty-state {
         text-align: center; padding: 56px 24px;
     }
+
     .empty-icon {
         width: 64px; height: 64px; border-radius: 50%;
         background: #f1f5f9;
         display: flex; align-items: center; justify-content: center;
         margin: 0 auto 16px;
     }
+
     .empty-icon i { font-size: 28px; color: #94a3b8; }
     .empty-title  { font-size: 16px; font-weight: 600; color: #475569; margin-bottom: 6px; }
     .empty-sub    { font-size: 13px; color: #94a3b8; }
 
-    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
         .info-grid  { grid-template-columns: 1fr; }
         .cc-meta    { grid-template-columns: 1fr; }
         .page-header { flex-direction: column; }
     }
 
-    /* ── PRINT ── */
     @media print {
         .page-header .btn-primary,
         .semester-row { display: none !important; }
@@ -165,8 +172,6 @@
 </style>
 
 <div class="tt-wrap">
-
-    <!-- PAGE HEADER -->
     <div class="page-header">
         <div class="page-header-left">
             <h2>Registration Summary</h2>
@@ -178,10 +183,8 @@
             OnClick="btnExport_Click" />
     </div>
 
-    <!-- MESSAGE -->
     <asp:Label ID="lblMessage" runat="server" />
 
-    <!-- SEMESTER SELECTOR -->
     <div class="card" style="padding:20px 28px;">
         <div class="semester-row">
             <label class="form-label">Semester:</label>
@@ -192,7 +195,6 @@
         </div>
     </div>
 
-    <!-- SUMMARY INFO -->
     <asp:Panel ID="pnlSummary" runat="server" Visible="false">
         <div class="card">
             <div class="info-grid">
@@ -230,7 +232,6 @@
         </div>
     </asp:Panel>
 
-    <!-- ENROLLED COURSES LIST -->
     <asp:Panel ID="pnlTimetable" runat="server" Visible="false">
         <div class="card">
             <div class="card-title">Enrolled Courses</div>
@@ -248,12 +249,10 @@
                     <asp:BoundField DataField="Lecturer" />
                 </Columns>
             </asp:GridView>
-            <!-- Course cards rendered by code-behind -->
             <asp:PlaceHolder ID="phCourses" runat="server" />
         </div>
     </asp:Panel>
 
-    <!-- WEEKLY TIMETABLE GRID -->
     <asp:Panel ID="pnlGrid" runat="server" Visible="false">
         <div class="card">
             <div class="card-title">
@@ -282,8 +281,6 @@
             </div>
         </div>
     </asp:Panel>
-
-    <!-- DEFAULT EMPTY STATE -->
     <asp:Panel ID="pnlEmpty" runat="server" Visible="true">
         <div class="card">
             <div class="empty-state">
@@ -293,11 +290,9 @@
             </div>
         </div>
     </asp:Panel>
-
 </div>
 
 <script>
-    // Highlight today's column in the grid
     window.onload = function () {
         var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         var today = days[new Date().getDay()];
@@ -323,7 +318,6 @@
             });
         }
 
-        // Style message label
         var lbl = document.getElementById('<%= lblMessage.ClientID %>');
         if (!lbl || !lbl.innerText.trim()) return;
         var text = lbl.innerText.trim();
@@ -332,6 +326,5 @@
         lbl.innerHTML = '<i class="fa ' + (isWarning ? 'fa-exclamation-triangle' : 'fa-exclamation-circle') + '"></i> ' + text;
     };
 </script>
-
 </asp:Content>
 

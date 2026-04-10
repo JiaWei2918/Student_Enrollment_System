@@ -6,27 +6,43 @@ CREATE OR ALTER PROCEDURE sp_GetStudentInvoices
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
+    WITH InvoiceBase AS
+    (
+        SELECT 
+            i.InvoiceID,
+            i.InvoiceNumber,
+            i.IssueDate,
+            i.DueDate,
+            i.TotalAmount,
+            ISNULL(SUM(p.Amount), 0) AS PaidAmount,
+            i.TotalAmount - ISNULL(SUM(p.Amount), 0) AS Balance,
+            i.Status
+        FROM Invoice i
+        LEFT JOIN Payment p
+            ON i.InvoiceID = p.InvoiceID
+            AND p.Status = 'Completed'
+        WHERE i.StudentID = @StudentID
+        GROUP BY
+            i.InvoiceID, i.InvoiceNumber, i.IssueDate,
+            i.DueDate, i.TotalAmount, i.Status
+    )
+
     SELECT 
-        i.InvoiceID,
-        i.InvoiceNumber,
-        i.IssueDate,
-        i.DueDate,
-        i.TotalAmount,
-        ISNULL(SUM(p.Amount),0) AS PaidAmount,
-        (i.TotalAmount - ISNULL(SUM(p.Amount),0)) AS Balance,
-        i.Status
-    FROM Invoice i
-    LEFT JOIN Payment p
-        ON i.InvoiceID = p.InvoiceID
-        AND p.Status = 'Completed'
-    WHERE i.StudentID = @StudentID
-    GROUP BY
-        i.InvoiceID,
-        i.InvoiceNumber,
-        i.IssueDate,
-        i.DueDate,
-        i.TotalAmount,
-        i.Status
+        InvoiceID,
+        InvoiceNumber,
+        IssueDate,
+        DueDate,
+        TotalAmount,
+        PaidAmount,
+        Balance,
+        Status,
+        SUM(
+            CASE WHEN Status IN ('Issued', 'Partial', 'Overdue')
+                THEN Balance ELSE 0
+            END
+        ) OVER() AS TotalOutstanding
+    FROM InvoiceBase
     ORDER BY IssueDate DESC
 END
 GO
