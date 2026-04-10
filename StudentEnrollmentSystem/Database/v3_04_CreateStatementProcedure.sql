@@ -91,6 +91,16 @@ CREATE OR ALTER PROCEDURE sp_GetStudentTimetable
     @SemesterID INT
 AS
 BEGIN
+SET NOCOUNT ON;
+    DECLARE @TotalCourses INT
+
+    SELECT @TotalCourses = COUNT(DISTINCT e.OfferingID)
+    FROM Enrollment e
+    JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+    WHERE e.StudentID = @StudentID
+        AND co.SemesterID = @SemesterID
+        AND e.Status = 'Enrolled'
+
     SELECT
         c.CourseCode,
         c.CourseName,
@@ -98,7 +108,17 @@ BEGIN
         CONVERT (VARCHAR(5), cs.StartTime, 108) AS StartTime,
         CONVERT (VARCHAR(5), cs.EndTime, 108) AS EndTime,
         cs.Venue,
-        co.Lecturer
+        co.Lecturer,
+        CASE cs.DayOfWeek
+            WHEN 'Monday'    THEN 1
+            WHEN 'Tuesday'   THEN 2
+            WHEN 'Wednesday' THEN 3
+            WHEN 'Thursday'  THEN 4
+            WHEN 'Friday'    THEN 5
+            WHEN 'Saturday'  THEN 6
+            ELSE 7
+        END AS DaySortOrder,
+        @TotalCourses AS TotalCourses
     FROM Enrollment e
     JOIN CourseOffering co ON e.OfferingID = co.OfferingID
     JOIN Course c ON co.CourseID = c.CourseID
@@ -106,17 +126,7 @@ BEGIN
     WHERE e.StudentID = @StudentID
         AND co.SemesterID = @SemesterID
         AND e.Status = 'Enrolled'
-    ORDER BY
-        CASE cs.DayOfWeek
-            WHEN 'Monday' THEN 1
-            WHEN 'Tuesday' THEN 2
-            WHEN 'Wednesday' THEN 3
-            WHEN 'Thursday' THEN 4
-            WHEN 'Friday' THEN 5
-            WHEN 'Saturday' THEN 6
-        END,
-        cs.StartTime;
-
+    ORDER BY DaySortOrder, cs.StartTime;
 END
 GO
 
