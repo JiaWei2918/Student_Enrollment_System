@@ -37,11 +37,9 @@ SET NOCOUNT ON;
         PaidAmount,
         Balance,
         Status,
-        SUM(
-            CASE WHEN Status IN ('Issued', 'Partial', 'Overdue')
-                THEN Balance ELSE 0
-            END
-        ) OVER() AS TotalOutstanding
+        SUM(CASE WHEN Status IN ('Issued', 'Partial', 'Overdue')
+                THEN Balance ELSE 0 END) OVER() AS TotalOutstanding,
+        SUM(TotalAmount) OVER() AS TotalInvoices
     FROM InvoiceBase
     ORDER BY IssueDate DESC
 END
@@ -221,17 +219,18 @@ CREATE OR ALTER PROCEDURE sp_GetStudentAdjustmentHistory
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
     SELECT 
         r.ReceiptNumber,
         a.AdjustmentType,
         CASE
-            WHEN a.AdjustmentType = 'Refund'
-                THEN -a.Amount
+            WHEN a.AdjustmentType = 'Refund' THEN -a.Amount
             ELSE a.Amount
         END AS Amount,
         a.Reason,
         a.AdjustmentDate,
-        ad.FullName AS ApprovedByName
+        ad.FullName AS ApprovedByName,
+        SUM(a.Amount) OVER() AS TotalAdjustments
     FROM AdjustmentNote a
     JOIN Payment p ON a.PaymentID = p.PaymentID
     JOIN Receipt r ON p.PaymentID = r.PaymentID

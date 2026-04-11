@@ -250,20 +250,20 @@
                 <nav class="nav-scroll">
                     <div class="menu">
                         <div class="menu-section">Dashboard</div>
-                        <a href="~/Student/Dashboard.aspx" runat="server" id="menuDashboard">
+                        <a href="Dashboard.aspx">
                             <i class="fa fa-home"></i><span>Dashboard</span>
                         </a>
 
                         <div class="menu-section">Online Enrollment</div>
-                        <a href="~/Student/Enrollment.aspx" runat="server" id="menuEnroll">
+                        <a href="Enrollment.aspx">
                             <i class="fa fa-book"></i><span>Course Enrollment</span>
                         </a>
 
                         <div class="menu-section">Add/Drop</div>
-                        <a href="~/Student/AddDrop.aspx" runat="server" id="menuAddDrop">
+                        <a href="AddDrop.aspx">
                             <i class="fa fa-plus"></i><span>Course Add/Drop</span>
                         </a>
-                        <a href="~/Student/AddDropHistory.aspx" runat="server" id="menuHistory">
+                        <a href="AddDropHistory.aspx">
                             <i class="fa fa-history"></i><span>Add/Drop History</span>
                         </a>
 
@@ -287,7 +287,7 @@
                         </a>
 
                         <div class="menu-section">Payment</div>
-                        <a href="~/Student/Payment.aspx" runat="server" id="menuPayment">
+                        <a href="Payment.aspx">
                             <i class="fa fa-credit-card"></i><span>Payment</span>
                         </a>
                         <a href="PaymentHistory.aspx">
@@ -298,13 +298,13 @@
                         </a>
 
                         <div class="menu-section">Account</div>
-                        <a href="~/Account/ChangePassword.aspx">
+                        <a href="~/Account/ChangePassword.aspx" runat="server">
                             <i class="fa fa-lock"></i><span>Change Password</span>
                         </a>
-                        <a href="~/Account/UpdateProfile.aspx" runat="server" id="menuProfile">
+                        <a href="~/Account/UpdateProfile.aspx" runat="server">
                             <i class="fa fa-user"></i><span>Update Profile</span>
                         </a>
-                        <a href="~/Account/ChangeBankDetail.aspx">
+                        <a href="~/Account/UpdateBankDetail.aspx" runat="server">
                             <i class="fa fa-university"></i><span>Update Bank Details</span>
                         </a>
                     </div>
