@@ -91,7 +91,7 @@ namespace StudentEnrollmentSystem.Account
                     }
                     else
                     {
-                        lblMessage.Text = "Password reset failred. Please try again.";
+                        lblMessage.Text = "Password reset failed. Please try again.";
                     }
                 }
             } 
