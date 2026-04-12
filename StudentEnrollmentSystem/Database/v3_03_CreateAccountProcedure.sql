@@ -123,15 +123,18 @@ CREATE OR ALTER PROCEDURE sp_GetBankDetails
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
     SELECT
         BankDetailID,
         BankName,
         '****' + RIGHT(AccountNumber, 4) AS AccountNumber,
         AccountHolderName,
         AccountType,
-        IsPrimary
+        IsPrimary,
+        COUNT(*) OVER() AS BankCount
     FROM BankDetail
     WHERE StudentID = @StudentID
+    ORDER BY IsPrimary DESC, BankDetailID ASC
 END
 GO
 

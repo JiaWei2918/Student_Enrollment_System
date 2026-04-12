@@ -23,15 +23,32 @@ namespace StudentEnrollmentSystem.Account
         {
             int studentID = Convert.ToInt32(Session["StudentID"]);
 
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("sp_GetBankDetails", conn))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@StudentID", studentID);
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_GetBankDetails", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@StudentID", studentID);
+                    conn.Open();
 
-                conn.Open();
-                gvBank.DataSource = cmd.ExecuteReader();
-                gvBank.DataBind();
+                    DataTable dt = new DataTable();
+                    dt.Load(cmd.ExecuteReader());
+
+                    bool hasData = dt.Rows.Count > 0;
+                    gvBank.Visible = hasData;
+                    pnlBankEmpty.Visible = !hasData;
+
+                    if (hasData)
+                    {
+                        gvBank.DataSource = dt;
+                        gvBank.DataBind();
+                    }
+                }
+            }
+            catch
+            {
+                ShowMessage("Error loading bank accounts.", isError: true);
             }
         }
 
@@ -39,52 +56,56 @@ namespace StudentEnrollmentSystem.Account
         {
             int studentID = Convert.ToInt32(Session["StudentID"]);
 
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("sp_SaveBankDetail", conn))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@BankDetailID", 
-                    string.IsNullOrEmpty(hfBankDetailID.Value) 
-                    ? (object)DBNull.Value : Convert.ToInt32(hfBankDetailID.Value));
-
-                cmd.Parameters.AddWithValue("@StudentID", studentID);
-                cmd.Parameters.AddWithValue("@BankName", txtBankName.Text.Trim());
-                cmd.Parameters.AddWithValue("@AccountNumber", txtAccountNumber.Text.Trim());
-                cmd.Parameters.AddWithValue("@AccountHolderName", txtHolderName.Text.Trim());
-                cmd.Parameters.AddWithValue("@AccountType", ddlType.SelectedValue);
-                cmd.Parameters.AddWithValue("@IsPrimary", chkPrimary.Checked);
-
-                try
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_SaveBankDetail", conn))
                 {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@BankDetailID",
+                        string.IsNullOrEmpty(hfBankDetailID.Value)
+                        ? (object)DBNull.Value : Convert.ToInt32(hfBankDetailID.Value));
+
+                    cmd.Parameters.AddWithValue("@StudentID", studentID);
+                    cmd.Parameters.AddWithValue("@BankName", txtBankName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@AccountNumber", txtAccountNumber.Text.Trim());
+                    cmd.Parameters.AddWithValue("@AccountHolderName", txtHolderName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@AccountType", ddlType.SelectedValue);
+                    cmd.Parameters.AddWithValue("@IsPrimary", chkPrimary.Checked);
+
+
                     conn.Open();
                     string result = cmd.ExecuteScalar()?.ToString();
 
-                    if (result == "SUCCESS")
+                    switch (result)
                     {
-                        lblMessage.Text = "Saved successfully.";
-                        lblMessage.ForeColor = System.Drawing.Color.Green;
+                        case "SUCCESS":
+                            ShowMessage(
+                                string.IsNullOrEmpty(hfBankDetailID.Value)
+                                    ? "Bank account added successfully!" : "Bank account updated successfully!",
+                                isError: false);
+                            ClearForm();
+                            LoadBanks();
+                            break;
 
-                        gvBank.EditIndex = -1;
-                        ClearForm();
-                        LoadBanks();
-                    }
-                    else if (result == "DUPLICATE_ACCOUNT")
-                    {
-                        lblMessage.Text = "Account already exists.";
-                        lblMessage.ForeColor = System.Drawing.Color.Red;
-                    }
-                    else
-                    {
-                        lblMessage.Text = "Error occurred.";
-                        lblMessage.ForeColor = System.Drawing.Color.Red;
+                        case "DUPLICATE_ACCOUNT":
+                            ShowMessage("This account number already exists in your profile.", isError: true);
+                            break;
+
+                        case "ERROR":
+                            ShowMessage("A database error occurred. Please try again.", isError: true);
+                            break;
+
+                        default:
+                            ShowMessage("An unexpected error occurred.", isError: true);
+                            break;
                     }
                 }
-                catch
-                {
-                    lblMessage.Text = "Database error occurred.";
-                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                }
+            }
+            catch
+            {
+                ShowMessage("A system error occurred. Please try again.", isError: true);
             }
         }
 
@@ -98,24 +119,31 @@ namespace StudentEnrollmentSystem.Account
 
         private void LoadBankByID(int id)
         {
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("SELECT * FROM BankDetail WHERE BankDetailID=@ID", conn))
+            try
             {
-                cmd.Parameters.AddWithValue("@ID", id);
-                conn.Open();
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("SELECT * FROM BankDetail WHERE BankDetailID=@ID", conn))
                 {
-                    if (reader.Read())
+                    cmd.Parameters.AddWithValue("@ID", id);
+                    conn.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        hfBankDetailID.Value = id.ToString();
-                        txtBankName.Text = reader["BankName"].ToString();
-                        txtAccountNumber.Text = reader["AccountNumber"].ToString();
-                        txtHolderName.Text = reader["AccountHolderName"].ToString();
-                        ddlType.SelectedValue = reader["AccountType"].ToString();
-                        chkPrimary.Checked = Convert.ToBoolean(reader["IsPrimary"]);
+                        if (reader.Read())
+                        {
+                            hfBankDetailID.Value = id.ToString();
+                            txtBankName.Text = reader["BankName"].ToString();
+                            txtAccountNumber.Text = reader["AccountNumber"].ToString();
+                            txtHolderName.Text = reader["AccountHolderName"].ToString();
+                            ddlType.SelectedValue = reader["AccountType"].ToString();
+                            chkPrimary.Checked = Convert.ToBoolean(reader["IsPrimary"]);
+                        }
                     }
                 }
+            }
+            catch
+            {
+                ShowMessage("Error loading bank account details.", isError: true);
             }
         }
 
@@ -123,17 +151,25 @@ namespace StudentEnrollmentSystem.Account
         {
             int id = Convert.ToInt32(gvBank.DataKeys[e.RowIndex].Value);
 
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("sp_DeleteBankDetail", conn))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@BankDetailID", id);
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_DeleteBankDetail", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@BankDetailID", id);
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
+                ShowMessage("Bank account removed successfully.", isError: false);
+                LoadBanks();
             }
-
-            LoadBanks();
+            catch
+            {
+                ShowMessage("Error deleting bank account.", isError: true);
+            }
         }
 
         private void ClearForm()
@@ -143,6 +179,15 @@ namespace StudentEnrollmentSystem.Account
             txtAccountNumber.Text = "";
             txtHolderName.Text = "";
             chkPrimary.Checked = false;
+            ddlType.SelectedIndex = 0;
+        }
+
+        private void ShowMessage(string text, bool isError)
+        {
+            lblMessage.ForeColor = isError
+                ? System.Drawing.Color.Red
+                : System.Drawing.Color.Green;
+            lblMessage.Text = text;
         }
     }
 }

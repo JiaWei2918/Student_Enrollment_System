@@ -15,15 +15,6 @@ namespace StudentEnrollmentSystem.Account
     {
 
         /// <summary>
-        /// lblMessage control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMessage;
-
-        /// <summary>
         /// hfBankDetailID control.
         /// </summary>
         /// <remarks>
@@ -33,22 +24,13 @@ namespace StudentEnrollmentSystem.Account
         protected global::System.Web.UI.WebControls.HiddenField hfBankDetailID;
 
         /// <summary>
-        /// txtBankName control.
+        /// lblMessage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtBankName;
-
-        /// <summary>
-        /// txtAccountNumber control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtAccountNumber;
+        protected global::System.Web.UI.WebControls.Label lblMessage;
 
         /// <summary>
         /// txtHolderName control.
@@ -60,6 +42,15 @@ namespace StudentEnrollmentSystem.Account
         protected global::System.Web.UI.WebControls.TextBox txtHolderName;
 
         /// <summary>
+        /// txtBankName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBankName;
+
+        /// <summary>
         /// ddlType control.
         /// </summary>
         /// <remarks>
@@ -67,6 +58,15 @@ namespace StudentEnrollmentSystem.Account
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlType;
+
+        /// <summary>
+        /// txtAccountNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAccountNumber;
 
         /// <summary>
         /// chkPrimary control.
@@ -94,5 +94,14 @@ namespace StudentEnrollmentSystem.Account
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvBank;
+
+        /// <summary>
+        /// pnlBankEmpty control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlBankEmpty;
     }
 }
