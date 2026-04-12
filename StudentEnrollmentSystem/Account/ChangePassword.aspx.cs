@@ -42,49 +42,68 @@ namespace StudentEnrollmentSystem.Account
         {
             int userID = Convert.ToInt32(Session["UserID"]);
 
-            if (txtConfirmPassword.Text == txtNewPassword.Text)
+            if (txtCurrentPassword.Text == txtNewPassword.Text)
             {
-                lblMessage.ForeColor = System.Drawing.Color.Red;
-                lblMessage.Text = "New Password cannot be the same as current password.";
+                ShowMessage("New password cannot be the same as your current password.", isError: true);
                 return;
             }
 
-            string currentHash = HashPassword(txtCurrentPassword.Text);
-            string newHash = HashPassword(txtNewPassword.Text);
-
-            using (SqlConnection conn = new SqlConnection(connStr))
-            using (SqlCommand cmd = new SqlCommand("sp_ChangePassword", conn))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
+                string currentHash = HashPassword(txtCurrentPassword.Text);
+                string newHash = HashPassword(txtNewPassword.Text);
 
-                cmd.Parameters.AddWithValue("@UserID", userID);
-                cmd.Parameters.AddWithValue("@CurrentPasswordHash", currentHash);
-                cmd.Parameters.AddWithValue("@NewPasswordHash", newHash);
-
-                conn.Open();
-
-                string result = cmd.ExecuteScalar()?.ToString();
-
-                if (result == "INVALID_PASSWORD")
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("sp_ChangePassword", conn))
                 {
-                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                    lblMessage.Text = "Current password is incorrect.";
-                }
-                else if (result == "SUCCESS")
-                {
-                    lblMessage.ForeColor = System.Drawing.Color.Green;
-                    lblMessage.Text = "Password changed successfully.";
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                    txtCurrentPassword.Text = "";
-                    txtNewPassword.Text = "";
-                    txtConfirmPassword.Text = "";
-                }
-                else
-                {
-                    lblMessage.ForeColor = System.Drawing.Color.Red;
-                    lblMessage.Text = "System error occurred.";
+                    cmd.Parameters.AddWithValue("@UserID", userID);
+                    cmd.Parameters.AddWithValue("@CurrentPasswordHash", currentHash);
+                    cmd.Parameters.AddWithValue("@NewPasswordHash", newHash);
+
+                    conn.Open();
+
+                    string result = cmd.ExecuteScalar()?.ToString();
+
+                    switch (result)
+                    {
+                        case "SUCCESS":
+                            txtCurrentPassword.Text = "";
+                            txtNewPassword.Text = "";
+                            txtConfirmPassword.Text = "";
+
+                            ScriptManager.RegisterStartupScript(
+                                this, GetType(), "showSuccess",
+                                "document.getElementById('" + pnlSuccess.ClientID + "').style.display='block';" +
+                                "document.getElementById('" + pnlForm.ClientID + "').style.display='none';",
+                                true);
+
+                            ShowMessage("Password changed successfully!", isError: false);
+                            break;
+
+                        case "INVALID_PASSWORD":
+                            ShowMessage("Current password is incorrect. Please try again.", isError: true);
+                            break;
+
+                        default:
+                            ShowMessage("A system error occurred. Please try again.", isError: true);
+                            break;
+                    }
                 }
             }
+            catch
+            {
+                ShowMessage("A system error occurred. Please try again.", isError: true);
+            }
+        }
+
+        private void ShowMessage(string text, bool isError)
+        {
+            lblMessage.ForeColor = isError
+                ? System.Drawing.Color.Red
+                : System.Drawing.Color.Green;
+            lblMessage.Text = text;
         }
     }
 }

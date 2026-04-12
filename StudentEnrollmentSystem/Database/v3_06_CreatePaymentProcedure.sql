@@ -6,27 +6,41 @@ CREATE OR ALTER PROCEDURE sp_GetStudentInvoices
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
+    WITH InvoiceBase AS
+    (
+        SELECT 
+            i.InvoiceID,
+            i.InvoiceNumber,
+            i.IssueDate,
+            i.DueDate,
+            i.TotalAmount,
+            ISNULL(SUM(p.Amount), 0) AS PaidAmount,
+            i.TotalAmount - ISNULL(SUM(p.Amount), 0) AS Balance,
+            i.Status
+        FROM Invoice i
+        LEFT JOIN Payment p
+            ON i.InvoiceID = p.InvoiceID
+            AND p.Status = 'Completed'
+        WHERE i.StudentID = @StudentID
+        GROUP BY
+            i.InvoiceID, i.InvoiceNumber, i.IssueDate,
+            i.DueDate, i.TotalAmount, i.Status
+    )
+
     SELECT 
-        i.InvoiceID,
-        i.InvoiceNumber,
-        i.IssueDate,
-        i.DueDate,
-        i.TotalAmount,
-        ISNULL(SUM(p.Amount),0) AS PaidAmount,
-        (i.TotalAmount - ISNULL(SUM(p.Amount),0)) AS Balance,
-        i.Status
-    FROM Invoice i
-    LEFT JOIN Payment p
-        ON i.InvoiceID = p.InvoiceID
-        AND p.Status = 'Completed'
-    WHERE i.StudentID = @StudentID
-    GROUP BY
-        i.InvoiceID,
-        i.InvoiceNumber,
-        i.IssueDate,
-        i.DueDate,
-        i.TotalAmount,
-        i.Status
+        InvoiceID,
+        InvoiceNumber,
+        IssueDate,
+        DueDate,
+        TotalAmount,
+        PaidAmount,
+        Balance,
+        Status,
+        SUM(CASE WHEN Status IN ('Issued', 'Partial', 'Overdue')
+                THEN Balance ELSE 0 END) OVER() AS TotalOutstanding,
+        SUM(TotalAmount) OVER() AS TotalInvoices
+    FROM InvoiceBase
     ORDER BY IssueDate DESC
 END
 GO
@@ -118,7 +132,11 @@ BEGIN
         p.Amount,
         p.PaymentMethod,
         p.Status,
-        p.PaymentDate
+        p.PaymentDate,
+        COUNT(*) OVER() AS TotalPayments,
+        SUM(p.Amount) OVER() AS TotalPaid,
+        SUM(CASE WHEN YEAR(p.PaymentDate) = YEAR(GETDATE())
+                THEN 1 ELSE 0 END) OVER() AS YearPayments
     FROM Payment p
     JOIN Invoice i ON p.InvoiceID = i.InvoiceID
     WHERE p.StudentID = @StudentID
@@ -150,7 +168,7 @@ GO
 -- Create or Update Invoices --
 CREATE OR ALTER PROCEDURE sp_CreateOrUpdateInvoice
     @StudentID INT,
-    @OfferingID INT,
+    @SemesterID INT,
     @CourseFee DECIMAL(10,2)
 AS
 BEGIN
@@ -201,17 +219,18 @@ CREATE OR ALTER PROCEDURE sp_GetStudentAdjustmentHistory
     @StudentID INT
 AS
 BEGIN
+SET NOCOUNT ON;
     SELECT 
         r.ReceiptNumber,
         a.AdjustmentType,
         CASE
-            WHEN a.AdjustmentType = 'Refund'
-                THEN -a.Amount
+            WHEN a.AdjustmentType = 'Refund' THEN -a.Amount
             ELSE a.Amount
         END AS Amount,
         a.Reason,
         a.AdjustmentDate,
-        ad.FullName AS ApprovedByName
+        ad.FullName AS ApprovedByName,
+        SUM(a.Amount) OVER() AS TotalAdjustments
     FROM AdjustmentNote a
     JOIN Payment p ON a.PaymentID = p.PaymentID
     JOIN Receipt r ON p.PaymentID = r.PaymentID

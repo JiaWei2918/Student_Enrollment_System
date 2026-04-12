@@ -24,6 +24,24 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Label lblMsg;
 
         /// <summary>
+        /// lblOutstanding control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOutstanding;
+
+        /// <summary>
+        /// lblSemesterBanner control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSemesterBanner;
+
+        /// <summary>
         /// gvInvoice control.
         /// </summary>
         /// <remarks>
@@ -51,6 +69,15 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.TextBox txtAmount;
 
         /// <summary>
+        /// lblMaxAmount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblMaxAmount;
+
+        /// <summary>
         /// ddlMethod control.
         /// </summary>
         /// <remarks>
@@ -67,5 +94,23 @@ namespace StudentEnrollmentSystem.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnPay;
+
+        /// <summary>
+        /// lblSummaryInvoice control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryInvoice;
+
+        /// <summary>
+        /// lblSummaryBalance control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryBalance;
     }
 }
