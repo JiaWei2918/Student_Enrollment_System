@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -16,11 +13,9 @@ namespace StudentEnrollmentSystem.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            Debug.WriteLine("=== ADMIN DASHBOARD LOAD ===");
 
-            if (Session["UserID"] == null || Session["Role"] == null)
+            if (Session["AdminID"] == null || Session["Role"]?.ToString() != "Admin")
             {
-                Debug.WriteLine("Session expired or user not logged in.");
                 Response.Redirect("~/Account/Login.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
@@ -28,7 +23,6 @@ namespace StudentEnrollmentSystem.Admin
 
             if (Session["Role"].ToString() != "Admin")
             {
-                Debug.WriteLine("Unauthorized access attempt.");
                 Response.Redirect("~/Account/Login.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
@@ -83,8 +77,6 @@ namespace StudentEnrollmentSystem.Admin
 
         protected void btnLogout_Click(object sender, EventArgs e)
         {
-            Debug.WriteLine("Admin logged out.");
-
             Session.Clear();
             Session.Abandon();
 

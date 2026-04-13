@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -17,7 +14,7 @@ namespace StudentEnrollmentSystem.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["Role"] == null || Session["Role"].ToString() != "Admin")
+            if (Session["AdminID"] == null || Session["Role"]?.ToString() != "Admin")
             {
                 Response.Redirect("~/Account/Login.aspx");
             }
@@ -44,8 +41,6 @@ namespace StudentEnrollmentSystem.Admin
         {
             lblMessage.Text = "";
             lblMessage.ForeColor = System.Drawing.Color.Red;
-
-            Debug.WriteLine("=== ADD SEMESTER START ===");
 
             using (SqlConnection conn = new SqlConnection(connStr))
             using (SqlCommand cmd = new SqlCommand("sp_AddSemester", conn))
