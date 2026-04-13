@@ -176,6 +176,26 @@ ORDER BY s.MatricNo
 END
 GO
 
+-- Get enrolled students by course offering
+CREATE OR ALTER PROCEDURE sp_GetStudentsByOffering
+    @OfferingID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        s.MatricNo,
+        s.FullName,
+        s.Email,
+        s.Program,
+        s.EnrollmentDate
+    FROM Enrollment e
+    INNER JOIN Student s ON e.StudentID = s.StudentID
+    WHERE e.OfferingID = @OfferingID
+      AND e.Status = 'Enrolled'
+    ORDER BY s.FullName;
+END
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM DatabaseVersion
     WHERE ScriptName = 'v2_05_CreateStudents.sql'

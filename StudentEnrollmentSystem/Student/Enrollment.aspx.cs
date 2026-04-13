@@ -34,14 +34,10 @@ namespace StudentEnrollmentSystem.Student
                 catch (SqlException sqlEx)
                 {
                     ShowMessage("Database error while loading page.", isError: true);
-
-                    System.Diagnostics.Debug.WriteLine(sqlEx.Message);
                 }
                 catch (Exception ex)
                 {
                     ShowMessage("Unexpected system error occurred.", isError: true);
-
-                    System.Diagnostics.Debug.WriteLine(ex.Message);
                 }
             }
         }
@@ -109,8 +105,6 @@ namespace StudentEnrollmentSystem.Student
             catch (Exception ex)
             {
                 ShowMessage("Unable to load available courses.", isError: true);
-
-                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
 

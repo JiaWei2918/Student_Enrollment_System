@@ -216,7 +216,6 @@
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
-    <Content Include="Student\AccountSettings.aspx" />
     <Content Include="Student\AddDrop.aspx" />
     <Content Include="Student\AddDropHistory.aspx" />
     <Content Include="Student\Dashboard.aspx" />
@@ -366,13 +365,6 @@
     </Compile>
     <Compile Include="Student.Master.designer.cs">
       <DependentUpon>Student.Master</DependentUpon>
-    </Compile>
-    <Compile Include="Student\AccountSettings.aspx.cs">
-      <DependentUpon>AccountSettings.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\AccountSettings.aspx.designer.cs">
-      <DependentUpon>AccountSettings.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\AddDrop.aspx.cs">
       <DependentUpon>AddDrop.aspx</DependentUpon>
