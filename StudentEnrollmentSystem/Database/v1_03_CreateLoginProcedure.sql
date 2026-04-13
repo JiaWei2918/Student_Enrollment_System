@@ -57,6 +57,7 @@ BEGIN
 
     DECLARE @FullName VARCHAR(100)
     DECLARE @StudentID INT = NULL
+    DECLARE @AdminID INT = NULL
 
     IF @Role = 'Student'
     BEGIN
@@ -66,11 +67,17 @@ BEGIN
         FROM Student
         WHERE UserID = @UserID
     END
-    ELSE
+    ELSE IF @Role = 'Admin'
     BEGIN
-        SELECT @FullName = FullName
+        SELECT 
+            @FullName = FullName,
+            @AdminID = AdminID
         FROM Administrator
         WHERE UserID = @UserID
+    END
+    ELSE
+    BEGIN
+        SET @FullName = NULL
     END
 
     SELECT 
@@ -78,7 +85,8 @@ BEGIN
         @UserID AS UserID,
         @Role AS Role,
         @FullName AS FullName,
-        @StudentID AS StudentID
+        @StudentID AS StudentID,
+        @AdminID AS AdminID
 END
 ELSE
 BEGIN

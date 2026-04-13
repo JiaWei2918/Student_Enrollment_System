@@ -36,6 +36,18 @@ namespace StudentEnrollmentSystem
                 return parts[0][0].ToString().ToUpper();
         }
 
+        public string GetMenuClass(string pageName)
+        {
+            string currentPage = System.IO.Path.GetFileName(Request.Path);
+            if (currentPage.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+                currentPage = currentPage.Substring(0, currentPage.Length - 5);
+
+            if (pageName.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+                pageName = pageName.Substring(0, pageName.Length - 5);
+
+            return currentPage.Equals(pageName, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+        }
+
         protected void btnLogout_Click(object sender, EventArgs e)
         {
             Session.Clear();
