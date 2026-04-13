@@ -28,7 +28,7 @@ Also ensure:
 - SQL Server service is running
 
 
-=============================================
+=====================================
 2. DATABASE SETUP (RECOMMENDED METHOD)
 ========================================
 
@@ -51,7 +51,7 @@ This script will:
 ✅ This is the FASTEST and SAFEST method
 
 
-=============================================
+=====================================
 3. MANUAL SETUP (OPTIONAL)
 ========================================
 
@@ -66,7 +66,7 @@ IMPORTANT:
 - Each script should only be executed ONCE
 
 
-=============================================
+=====================================
 4. DATABASE VERSION CONTROL
 ========================================
 
@@ -84,7 +84,7 @@ IMPORTANT:
 - Re-running may cause conflicts or duplicate data
 
 
-=============================================
+=====================================
 5. DEVELOPMENT RULES
 ========================================
 
@@ -105,7 +105,7 @@ Examples of stored procedures:
 - Statement
 
 
-=============================================
+=====================================
 6. SYSTEM STARTUP CHECKLIST
 ========================================
 
@@ -119,7 +119,7 @@ Before running the system:
 ✔ Login function is working  
 
 
-=============================================
+=====================================
 7. IMPORTANT NOTES
 ========================================
 
@@ -132,6 +132,6 @@ Before running the system:
 - The system is designed for LOCALHOST deployment
 
 
-=============================================
+=====================================
 END OF SETUP GUIDE
 ========================================
