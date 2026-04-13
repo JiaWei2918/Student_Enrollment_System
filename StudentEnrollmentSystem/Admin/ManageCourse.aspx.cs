@@ -12,7 +12,7 @@ namespace StudentEnrollmentSystem.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["Role"] == null || Session["Role"].ToString() != "Admin")
+            if (Session["AdminID"] == null || Session["Role"]?.ToString() != "Admin")
             {
                 Response.Redirect("~/Account/Login.aspx");
                 return;
@@ -123,8 +123,6 @@ namespace StudentEnrollmentSystem.Admin
                     ClearForm();
                     LoadCourses();
                     LoadPrerequisiteCourses();
-
-                    //btnAdd.Text = "Add";
                 }
             }
             catch

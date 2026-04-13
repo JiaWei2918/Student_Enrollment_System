@@ -410,7 +410,7 @@
                     <h2>Today's Schedule</h2>
                     <p><asp:Label ID="lblTodayDate" runat="server" /></p>
                 </div>
-                <a href="TimeTable.aspx" class="btn-calendar">
+                <a href="<%= ResolveUrl("~/Student/TimeTable.aspx") %>" class="btn-calendar">
                     <i class="fa fa-calendar"></i> View Full Calendar
                 </a>
             </div>
@@ -443,19 +443,19 @@
             <div class="card">
                 <div class="card-title">Quick Actions</div>
                 <div class="quick-actions-grid">
-                    <a href="Enrollment.aspx" class="qa-btn qa-blue">
+                    <a href="<%= ResolveUrl("~/Student/Enrollment.aspx") %>" class="qa-btn qa-blue">
                         <div class="qa-icon"><i class="fa fa-book"></i></div>
                         <div class="qa-label">Enroll</div>
                     </a>
-                    <a href="Statement.aspx" class="qa-btn qa-purple">
+                    <a href="<%= ResolveUrl("~/Student/Statement.aspx") %>" class="qa-btn qa-purple">
                         <div class="qa-icon"><i class="fa fa-file-text"></i></div>
                         <div class="qa-label">Statement</div>
                     </a>
-                    <a href="Payment.aspx" class="qa-btn qa-emerald">
+                    <a href="<%= ResolveUrl("~/Student/Payment.aspx") %>" class="qa-btn qa-emerald">
                         <div class="qa-icon"><i class="fa fa-credit-card"></i></div>
                         <div class="qa-label">Pay</div>
                     </a>
-                    <a href="TeachingEvaluation.aspx" class="qa-btn qa-amber">
+                    <a href="<%= ResolveUrl("~/Student/TeachingEvaluation.aspx") %>" class="qa-btn qa-amber">
                         <div class="qa-icon"><i class="fa fa-star"></i></div>
                         <div class="qa-label">Evaluate</div>
                     </a>

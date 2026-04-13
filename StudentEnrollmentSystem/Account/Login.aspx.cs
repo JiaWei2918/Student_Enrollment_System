@@ -71,6 +71,7 @@ namespace StudentEnrollmentSystem.Account
                                 int userID = Convert.ToInt32(reader["UserID"]);
                                 string fullName = reader["FullName"].ToString();
                                 object studentID = reader["StudentID"];
+                                object adminID = reader["AdminID"];
 
                                 Session["UserID"] = userID;
                                 Session["Username"] = username;
@@ -79,6 +80,9 @@ namespace StudentEnrollmentSystem.Account
 
                                 if (studentID != DBNull.Value)
                                     Session["StudentID"] = studentID;
+
+                                if (adminID != DBNull.Value)
+                                    Session["AdminID"] = adminID;
 
                                 Session.Timeout = 30;
 

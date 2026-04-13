@@ -250,61 +250,61 @@
                 <nav class="nav-scroll">
                     <div class="menu">
                         <div class="menu-section">Dashboard</div>
-                        <a href="Dashboard.aspx">
+                        <a href="<%= ResolveUrl("~/Student/Dashboard.aspx") %>" class='<%= GetMenuClass("Dashboard.aspx") %>'>
                             <i class="fa fa-home"></i><span>Dashboard</span>
                         </a>
 
                         <div class="menu-section">Online Enrollment</div>
-                        <a href="Enrollment.aspx">
+                        <a href="<%= ResolveUrl("~/Student/Enrollment.aspx") %>" class='<%= GetMenuClass("Enrollment.aspx") %>'>
                             <i class="fa fa-book"></i><span>Course Enrollment</span>
                         </a>
 
                         <div class="menu-section">Add/Drop</div>
-                        <a href="AddDrop.aspx">
+                        <a href="<%= ResolveUrl("~/Student/AddDrop.aspx") %>" class='<%= GetMenuClass("AddDrop.aspx") %>'>
                             <i class="fa fa-plus"></i><span>Course Add/Drop</span>
                         </a>
-                        <a href="AddDropHistory.aspx">
+                        <a href="<%= ResolveUrl("~/Student/AddDropHistory.aspx") %>" class='<%= GetMenuClass("AddDropHistory.aspx") %>'>
                             <i class="fa fa-history"></i><span>Add/Drop History</span>
                         </a>
 
                         <div class="menu-section">Enquiry</div>
-                        <a href="Enquiry.aspx">
+                        <a href="<%= ResolveUrl("~/Student/Enquiry.aspx") %>" class='<%= GetMenuClass("Enquiry.aspx") %>'>
                             <i class="fa fa-envelope"></i><span>Contact Us</span>
                         </a>
-                        <a href="TimetableMatching.aspx">
+                        <a href="<%= ResolveUrl("~/Student/TimetableMatching.aspx") %>" class='<%= GetMenuClass("TimetableMatching.aspx") %>'>
                             <i class="fa fa-calendar"></i><span>Timetable Matching</span>
                         </a>
-                        <a href="TeachingEvaluation.aspx">
+                        <a href="<%= ResolveUrl("~/Student/TeachingEvaluation.aspx") %>" class='<%= GetMenuClass("TeachingEvaluation.aspx") %>'>
                             <i class="fa fa-star"></i><span>Student Evaluation</span>
                         </a>
 
                         <div class="menu-section">Statement</div>
-                        <a href="Statement.aspx">
+                        <a href="<%= ResolveUrl("~/Student/Statement.aspx") %>" class='<%= GetMenuClass("Statement.aspx") %>'>
                             <i class="fa fa-file-text"></i><span>Student Statement</span>
                         </a>
-                        <a href="TimeTable.aspx">
+                        <a href="<%= ResolveUrl("~/Student/TimeTable.aspx") %>" class='<%= GetMenuClass("TimeTable.aspx") %>'>
                             <i class="fa fa-list-alt"></i><span>Registration Summary</span>
                         </a>
 
                         <div class="menu-section">Payment</div>
-                        <a href="Payment.aspx">
+                        <a href="<%= ResolveUrl("~/Student/Payment.aspx") %>" class='<%= GetMenuClass("Payment.aspx") %>'>
                             <i class="fa fa-credit-card"></i><span>Payment</span>
                         </a>
-                        <a href="PaymentHistory.aspx">
+                        <a href="<%= ResolveUrl("~/Student/PaymentHistory.aspx") %>" class='<%= GetMenuClass("PaymentHistory.aspx") %>'>
                             <i class="fa fa-receipt"></i><span>Payment History</span>
                         </a>
-                        <a href="InvoiceHistory.aspx">
+                        <a href="<%= ResolveUrl("~/Student/InvoiceHistory.aspx") %>" class='<%= GetMenuClass("InvoiceHistory.aspx") %>'>
                             <i class="fa fa-file-invoice"></i><span>Invoice &amp; Adjustment</span>
                         </a>
 
                         <div class="menu-section">Account</div>
-                        <a href="~/Account/ChangePassword.aspx" runat="server">
+                        <a href="<%= ResolveUrl("~/Account/ChangePassword.aspx") %>" class='<%= GetMenuClass("ChangePassword.aspx") %>'>
                             <i class="fa fa-lock"></i><span>Change Password</span>
                         </a>
-                        <a href="~/Account/UpdateProfile.aspx" runat="server">
+                        <a href="<%= ResolveUrl("~/Account/UpdateProfile.aspx") %>" class='<%= GetMenuClass("UpdateProfile.aspx") %>'>
                             <i class="fa fa-user"></i><span>Update Profile</span>
                         </a>
-                        <a href="~/Account/UpdateBankDetail.aspx" runat="server">
+                        <a href="<%= ResolveUrl("~/Account/UpdateBankDetail.aspx") %>" class='<%= GetMenuClass("UpdateBankDetail.aspx") %>'>
                             <i class="fa fa-university"></i><span>Update Bank Details</span>
                         </a>
                     </div>
@@ -322,6 +322,7 @@
                         <i class="fa fa-bars"></i>
                     </button>
                     <div class="topbar-title">Student Enrollment System</div>
+                    <asp:Label ID="lblDebug" runat="server" ForeColor="Red" Font-Size="Small" />
                     <div></div>
                 </header>
 
@@ -342,27 +343,6 @@
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('backdrop').classList.remove('show');
         }
-
-        (function () {
-            var path = window.location.pathname.toLowerCase();
-            var currentPage = path.split('/').pop().replace('.aspx', '');
-
-            var links = document.querySelectorAll('.menu a');
-            links.forEach(function (a) {
-                var href = a.getAttribute('href');
-                if (!href) return;
-
-                var linkPage = href.toLowerCase()
-                    .replace('~/', '')
-                    .split('/')
-                    .pop()
-                    .replace('.aspx', '');
-
-                if (currentPage === linkPage) {
-                    a.classList.add('active');
-                }
-            });
-        })();
     </script>
 </body>
 </html>

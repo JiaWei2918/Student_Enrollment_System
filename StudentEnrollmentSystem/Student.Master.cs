@@ -20,6 +20,7 @@ namespace StudentEnrollmentSystem
             lblStudentName.Text = fullName;
             lblStudentID.Text = username;
             lblStudentProg.Text = program;
+            lblDebug.Text = "Current page: " + System.IO.Path.GetFileName(Request.Url.AbsolutePath);
 
             string initials = GetInitials(fullName);
             lblAvatar.Text = initials;
@@ -34,6 +35,18 @@ namespace StudentEnrollmentSystem
                 return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
             else
                 return parts[0][0].ToString().ToUpper();
+        }
+
+        public string GetMenuClass(string pageName)
+        {
+            string currentPage = System.IO.Path.GetFileName(Request.Path);
+            if (currentPage.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+                currentPage = currentPage.Substring(0, currentPage.Length - 5);
+
+            if (pageName.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+                pageName = pageName.Substring(0, pageName.Length - 5);
+
+            return currentPage.Equals(pageName, StringComparison.OrdinalIgnoreCase) ? "active" : "";
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)
