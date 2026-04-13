@@ -2,7 +2,6 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -46,7 +45,6 @@ namespace StudentEnrollmentSystem.Account
             }
 
             string hashedPassword = HashPassword(password);
-            Debug.WriteLine("Hashed Password: " + hashedPassword);
 
             try
             {

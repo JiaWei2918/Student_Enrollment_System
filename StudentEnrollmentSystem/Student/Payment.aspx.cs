@@ -167,9 +167,8 @@ namespace StudentEnrollmentSystem.Student
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
                 ShowMessage("System error during payment.", isError: true);
             }
 

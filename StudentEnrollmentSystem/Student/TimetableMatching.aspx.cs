@@ -150,9 +150,8 @@ namespace StudentEnrollmentSystem.Student
 
                 btnSearch_Click(null, null);
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
                 ShowMessage("System error during enrollment.", isError: true);
             }
         }

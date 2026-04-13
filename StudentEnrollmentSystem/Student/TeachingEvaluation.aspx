@@ -251,7 +251,6 @@
             <div class="card-title">Your Courses</div>
 
             <asp:Panel ID="pnlCourseList" runat="server">
-                <!-- Course buttons rendered by code-behind -->
                 <asp:PlaceHolder ID="phCourses" runat="server" />
             </asp:Panel>
 

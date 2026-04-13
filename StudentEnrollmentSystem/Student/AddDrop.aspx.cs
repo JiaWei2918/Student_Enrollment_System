@@ -28,15 +28,12 @@ namespace StudentEnrollmentSystem.Student
             }
         }
 
-        private void ShowMessage(string message, bool isError = true, Exception ex = null)
+        private void ShowMessage(string message, bool isError = true)
         {
             lblMessage.ForeColor = isError
                  ? System.Drawing.Color.Red
                  : System.Drawing.Color.Green;
             lblMessage.Text = message;
-
-            if (ex != null)
-                System.Diagnostics.Debug.WriteLine("ERROR: " + ex.Message);
         }
 
         private void LoadActiveSemester()
