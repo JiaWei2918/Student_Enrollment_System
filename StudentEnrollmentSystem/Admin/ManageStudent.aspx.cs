@@ -15,7 +15,7 @@ namespace StudentEnrollmentSystem.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["Role"] == null || Session["Role"].ToString() != "Admin")
+            if (Session["AdminID"] == null || Session["Role"]?.ToString() != "Admin")
                 Response.Redirect("~/Account/Login.aspx");
 
             if (!IsPostBack)
@@ -110,17 +110,17 @@ namespace StudentEnrollmentSystem.Admin
 
                 cmd.Parameters.AddWithValue("@StudentID", id);
                 cmd.Parameters.AddWithValue("@FullName",
-                    ((TextBox)row.Cells[1].Controls[0]).Text);
+                    ((TextBox)row.FindControl("txtEditFullName")).Text);
                 cmd.Parameters.AddWithValue("@Email",
-                    ((TextBox)row.Cells[2].Controls[0]).Text);
+                    ((TextBox)row.FindControl("txtEditEmail")).Text);
                 cmd.Parameters.AddWithValue("@Phone",
-                    ((TextBox)row.Cells[3].Controls[0]).Text);
+                    ((TextBox)row.FindControl("txtEditPhone")).Text);
                 cmd.Parameters.AddWithValue("@Program",
-                    ((TextBox)row.Cells[4].Controls[0]).Text);
+                    ((TextBox)row.FindControl("txtEditProgram")).Text);
                 cmd.Parameters.AddWithValue("@Section",
-                    ((TextBox)row.Cells[5].Controls[0]).Text);
+                    ((TextBox)row.FindControl("txtEditSection")).Text);
                 cmd.Parameters.AddWithValue("@Status",
-                    ((TextBox)row.Cells[7].Controls[0]).Text);
+                    ((DropDownList)row.FindControl("ddlEditStatus")).SelectedValue);
 
                 conn.Open();
                 string result = cmd.ExecuteScalar()?.ToString();
