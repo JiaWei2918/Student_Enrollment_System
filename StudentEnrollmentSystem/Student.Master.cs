@@ -20,7 +20,6 @@ namespace StudentEnrollmentSystem
             lblStudentName.Text = fullName;
             lblStudentID.Text = username;
             lblStudentProg.Text = program;
-            lblDebug.Text = "Current page: " + System.IO.Path.GetFileName(Request.Url.AbsolutePath);
 
             string initials = GetInitials(fullName);
             lblAvatar.Text = initials;

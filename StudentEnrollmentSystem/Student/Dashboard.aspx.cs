@@ -69,20 +69,16 @@ namespace StudentEnrollmentSystem.Student
 
         private string GetActiveSemesterName()
         {
-            try
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    conn.Open();
-                    using (SqlDataReader r = cmd.ExecuteReader())
-                        if (r.Read())
-                            return r["SemesterName"].ToString().Trim() + " " +
-                                   r["AcademicYear"].ToString().Trim();
-                }
+                cmd.CommandType = CommandType.StoredProcedure;
+                conn.Open();
+                using (SqlDataReader r = cmd.ExecuteReader())
+                    if (r.Read())
+                        return r["SemesterName"].ToString().Trim() + " " +
+                                r["AcademicYear"].ToString().Trim();
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
 
             int month = DateTime.Now.Month, year = DateTime.Now.Year;
             if (month <= 5) return $"Spring {year}";
@@ -92,25 +88,23 @@ namespace StudentEnrollmentSystem.Student
 
         private int GetActiveSemesterID()
         {
-            try
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    conn.Open();
-                    using (SqlDataReader r = cmd.ExecuteReader())
-                        if (r.Read() && r["SemesterID"] != DBNull.Value)
-                            return Convert.ToInt32(r["SemesterID"]);
-                }
+                cmd.CommandType = CommandType.StoredProcedure;
+                conn.Open();
+                using (SqlDataReader r = cmd.ExecuteReader())
+                    if (r.Read() && r["SemesterID"] != DBNull.Value)
+                        return Convert.ToInt32(r["SemesterID"]);
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
+
             return 0;
         }
 
         private string GetRelativeTime(DateTime dt)
         {
             TimeSpan diff = DateTime.Now - dt;
+
             if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} minutes ago";
             if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours == 1 ? "" : "s")} ago";
             if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} day{((int)diff.TotalDays == 1 ? "" : "s")} ago";
@@ -121,27 +115,23 @@ namespace StudentEnrollmentSystem.Student
         {
             int studentID = Convert.ToInt32(Session["StudentID"]);
 
-            try
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetStudentCredits", conn))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_GetStudentCredits", conn))
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+                conn.Open();
+                using (SqlDataReader r = cmd.ExecuteReader())
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    conn.Open();
-                    using (SqlDataReader r = cmd.ExecuteReader())
+                    if (r.Read())
                     {
-                        if (r.Read())
-                        {
-                            lblTotalCredits.Text = (r["TotalCredits"] == DBNull.Value ? 0
-                                                      : Convert.ToInt32(r["TotalCredits"])).ToString();
-                            lblRequiredCredits.Text = (r["MaxCredits"] == DBNull.Value ? 18
-                                                      : Convert.ToInt32(r["MaxCredits"])).ToString();
-                        }
+                        lblTotalCredits.Text = (r["TotalCredits"] == DBNull.Value ? 0
+                                                    : Convert.ToInt32(r["TotalCredits"])).ToString();
+                        lblRequiredCredits.Text = (r["MaxCredits"] == DBNull.Value ? 18
+                                                    : Convert.ToInt32(r["MaxCredits"])).ToString();
                     }
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Credits: " + ex.Message); }
 
             try
             {
@@ -156,9 +146,8 @@ namespace StudentEnrollmentSystem.Student
                     lblEnrolledCount.Text = dt.Rows.Count.ToString();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine("EnrolledCount: " + ex.Message);
                 lblEnrolledCount.Text = "0";
             }
 
@@ -167,8 +156,8 @@ namespace StudentEnrollmentSystem.Student
                 string sql = @"
                     SELECT ISNULL(SUM(c.CreditHours), 0) AS CompletedCredits
                     FROM Enrollment e
-                    JOIN CourseOffering co ON e.OfferingID   = co.OfferingID
-                    JOIN Course c ON co.CourseID    = c.CourseID
+                    JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+                    JOIN Course c ON co.CourseID = c.CourseID
                     WHERE e.StudentID = @StudentID AND e.Status = 'Enrolled'";
 
                 using (SqlConnection conn = new SqlConnection(connStr))
@@ -189,9 +178,8 @@ namespace StudentEnrollmentSystem.Student
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine("GPA: " + ex.Message);
                 lblGPA.Text = "—";
                 lblCompletedCredits.Text = "0";
             }
@@ -235,9 +223,8 @@ namespace StudentEnrollmentSystem.Student
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine("Balance: " + ex.Message);
                 lblBalance.Text = "0";
                 lblDueDate.Text = "—";
             }
@@ -260,68 +247,60 @@ namespace StudentEnrollmentSystem.Student
                     c.CourseCode,
                     c.CourseName,
                     CONVERT(VARCHAR(5), cs.StartTime, 108) AS StartTime,
-                    CONVERT(VARCHAR(5), cs.EndTime,   108) AS EndTime,
-                    ISNULL(cs.Venue,     '') AS Venue,
-                    ISNULL(co.Lecturer,  '') AS Lecturer,
+                    CONVERT(VARCHAR(5), cs.EndTime, 108) AS EndTime,
+                    ISNULL(cs.Venue, '') AS Venue,
+                    ISNULL(co.Lecturer, '') AS Lecturer,
                     CASE (ROW_NUMBER() OVER (ORDER BY cs.StartTime) % 3)
                         WHEN 1 THEN 'icon-blue-cyan'
                         WHEN 2 THEN 'icon-purple-pink'
-                        ELSE        'icon-emerald-teal'
+                        ELSE 'icon-emerald-teal'
                     END AS IconClass
                 FROM Enrollment e
-                JOIN CourseOffering co  ON e.OfferingID  = co.OfferingID
-                JOIN Course c           ON co.CourseID   = c.CourseID
-                JOIN CourseSchedule cs  ON co.OfferingID = cs.OfferingID
-                WHERE e.StudentID   = @StudentID
-                AND   co.SemesterID = @SemesterID
-                AND   e.Status      = 'Enrolled'
-                AND   cs.DayOfWeek  = @Day
+                JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+                JOIN Course c ON co.CourseID = c.CourseID
+                JOIN CourseSchedule cs ON co.OfferingID = cs.OfferingID
+                WHERE e.StudentID = @StudentID
+                AND co.SemesterID = @SemesterID
+                AND e.Status = 'Enrolled'
+                AND cs.DayOfWeek = @Day
                 ORDER BY cs.StartTime";
 
             var classes = new List<ClassItem>();
 
-            try
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+                cmd.Parameters.Add("@SemesterID", SqlDbType.Int).Value = semesterID;
+                cmd.Parameters.Add("@Day", SqlDbType.VarChar, 20).Value = DateTime.Now.DayOfWeek.ToString();
+                conn.Open();
+
+                DataTable dt = new DataTable();
+                dt.Load(cmd.ExecuteReader());
+
+                string dayLabel = "Today";
+
+                if (dt.Rows.Count == 0)
                 {
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    cmd.Parameters.Add("@SemesterID", SqlDbType.Int).Value = semesterID;
-                    cmd.Parameters.Add("@Day", SqlDbType.VarChar, 20).Value = DateTime.Now.DayOfWeek.ToString();
-                    conn.Open();
-
-                    DataTable dt = new DataTable();
-                    dt.Load(cmd.ExecuteReader());
-
-                    string dayLabel = "Today";
-
-                    // If nothing today, try tomorrow
-                    if (dt.Rows.Count == 0)
-                    {
-                        cmd.Parameters["@Day"].Value = DateTime.Now.AddDays(1).DayOfWeek.ToString();
-                        DataTable dt2 = new DataTable();
-                        using (SqlDataReader r2 = cmd.ExecuteReader())
-                            dt2.Load(r2);
-                        dt = dt2;
-                        dayLabel = "Tomorrow";
-                    }
-
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        classes.Add(new ClassItem
-                        {
-                            Code = row["CourseCode"].ToString(),
-                            Name = row["CourseName"].ToString(),
-                            Time = dayLabel + ", " + row["StartTime"] + " – " + row["EndTime"],
-                            Room = row["Venue"].ToString(),
-                            IconClass = row["IconClass"].ToString()
-                        });
-                    }
+                    cmd.Parameters["@Day"].Value = DateTime.Now.AddDays(1).DayOfWeek.ToString();
+                    DataTable dt2 = new DataTable();
+                    using (SqlDataReader r2 = cmd.ExecuteReader())
+                        dt2.Load(r2);
+                    dt = dt2;
+                    dayLabel = "Tomorrow";
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Schedule: " + ex.Message);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    classes.Add(new ClassItem
+                    {
+                        Code = row["CourseCode"].ToString(),
+                        Name = row["CourseName"].ToString(),
+                        Time = dayLabel + ", " + row["StartTime"] + " – " + row["EndTime"],
+                        Room = row["Venue"].ToString(),
+                        IconClass = row["IconClass"].ToString()
+                    });
+                }
             }
 
             rptClasses.DataSource = classes;
@@ -333,73 +312,64 @@ namespace StudentEnrollmentSystem.Student
             int studentID = Convert.ToInt32(Session["StudentID"]);
             var activities = new List<ActivityItem>();
 
-            try
+            string sql = @"
+                SELECT TOP 4 * FROM (
+                    SELECT
+                        CASE h.ActionType
+                            WHEN 'Add' THEN 'Course enrollment completed'
+                            WHEN 'Drop' THEN 'Course dropped'
+                            ELSE h.ActionType
+                        END AS Title,
+                        c.CourseCode + ' — ' + c.CourseName AS Description,
+                        h.ActionDate AS EventDate,
+                        CASE h.ActionType
+                            WHEN 'Add' THEN 'act-emerald'
+                            ELSE 'act-purple'
+                        END AS BgClass,
+                        CASE h.ActionType
+                            WHEN 'Add' THEN 'fa fa-check-circle'
+                            ELSE 'fa fa-minus-circle'
+                        END AS IconClass
+                    FROM AddDropHistory h
+                    JOIN CourseOffering co ON h.OfferingID = co.OfferingID
+                    JOIN Course c ON co.CourseID  = c.CourseID
+                    WHERE h.StudentID = @StudentID
+
+                    UNION ALL
+
+                    SELECT
+                        'Payment received' AS Title,
+                        'Tuition payment of RM ' + FORMAT(p.Amount,'N2')
+                            + ' processed' AS Description,
+                        p.PaymentDate AS EventDate,
+                        'act-blue' AS BgClass,
+                        'fa fa-credit-card' AS IconClass
+                    FROM Payment p
+                    WHERE p.StudentID = @StudentID
+                    AND p.Status = 'Completed'
+                ) t
+                ORDER BY EventDate DESC";
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
             {
-                string sql = @"
-                    SELECT TOP 4 * FROM (
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+                conn.Open();
 
-                        SELECT
-                            CASE h.ActionType
-                                WHEN 'Add'  THEN 'Course enrollment completed'
-                                WHEN 'Drop' THEN 'Course dropped'
-                                ELSE h.ActionType
-                            END                                         AS Title,
-                            c.CourseCode + ' — ' + c.CourseName        AS Description,
-                            h.ActionDate                                AS EventDate,
-                            CASE h.ActionType
-                                WHEN 'Add'  THEN 'act-emerald'
-                                ELSE             'act-purple'
-                            END                                         AS BgClass,
-                            CASE h.ActionType
-                                WHEN 'Add'  THEN 'fa fa-check-circle'
-                                ELSE             'fa fa-minus-circle'
-                            END                                         AS IconClass
-                        FROM AddDropHistory h
-                        JOIN CourseOffering co ON h.OfferingID = co.OfferingID
-                        JOIN Course c          ON co.CourseID  = c.CourseID
-                        WHERE h.StudentID = @StudentID
-
-                        UNION ALL
-
-                        SELECT
-                            'Payment received'                                      AS Title,
-                            'Tuition payment of RM ' + FORMAT(p.Amount,'N2')
-                                + ' processed'                                      AS Description,
-                            p.PaymentDate                                           AS EventDate,
-                            'act-blue'                                              AS BgClass,
-                            'fa fa-credit-card'                                     AS IconClass
-                        FROM Payment p
-                        WHERE p.StudentID = @StudentID
-                        AND   p.Status    = 'Completed'
-
-                    ) t
-                    ORDER BY EventDate DESC";
-
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                using (SqlDataReader r = cmd.ExecuteReader())
                 {
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    conn.Open();
-
-                    using (SqlDataReader r = cmd.ExecuteReader())
+                    while (r.Read())
                     {
-                        while (r.Read())
+                        activities.Add(new ActivityItem
                         {
-                            activities.Add(new ActivityItem
-                            {
-                                Title = r["Title"].ToString(),
-                                Description = r["Description"].ToString(),
-                                Time = GetRelativeTime(Convert.ToDateTime(r["EventDate"])),
-                                BgClass = r["BgClass"].ToString(),
-                                IconClass = r["IconClass"].ToString()
-                            });
-                        }
+                            Title = r["Title"].ToString(),
+                            Description = r["Description"].ToString(),
+                            Time = GetRelativeTime(Convert.ToDateTime(r["EventDate"])),
+                            BgClass = r["BgClass"].ToString(),
+                            IconClass = r["IconClass"].ToString()
+                        });
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Activities: " + ex.Message);
             }
 
             if (activities.Count == 0)
@@ -421,91 +391,83 @@ namespace StudentEnrollmentSystem.Student
             int studentID = Convert.ToInt32(Session["StudentID"]);
             var list = new List<AnnouncementItem>();
 
-            try
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_GetActiveSemester", conn))
+                cmd.CommandType = CommandType.StoredProcedure;
+                conn.Open();
+                using (SqlDataReader r = cmd.ExecuteReader())
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    conn.Open();
-                    using (SqlDataReader r = cmd.ExecuteReader())
+                    if (r.Read())
                     {
-                        if (r.Read())
-                        {
-                            string sem = r["SemesterName"].ToString().Trim() + " " + r["AcademicYear"].ToString().Trim();
-                            DateTime addEnd = Convert.ToDateTime(r["AddPeriodEnd"]);
-                            DateTime dropEnd = Convert.ToDateTime(r["DropPeriodEnd"]);
+                        string sem = r["SemesterName"].ToString().Trim() + " " + r["AcademicYear"].ToString().Trim();
+                        DateTime addEnd = Convert.ToDateTime(r["AddPeriodEnd"]);
+                        DateTime dropEnd = Convert.ToDateTime(r["DropPeriodEnd"]);
 
+                        list.Add(new AnnouncementItem
+                        {
+                            Title = sem + " Registration Open",
+                            Description = "Course registration is active. Enroll through the Enrollment page.",
+                            Date = "Active semester",
+                            DotClass = "dot-info"
+                        });
+
+                        int daysAdd = (int)(addEnd - DateTime.Now).TotalDays;
+                        if (daysAdd >= 0 && daysAdd <= 30)
                             list.Add(new AnnouncementItem
                             {
-                                Title = sem + " Registration Open",
-                                Description = "Course registration is active. Enroll through the Enrollment page.",
-                                Date = "Active semester",
-                                DotClass = "dot-info"
+                                Title = "Add Period Ends " + addEnd.ToString("MMM d"),
+                                Description = daysAdd == 0
+                                    ? "Today is the last day to add courses!"
+                                    : $"Add period closes in {daysAdd} day{(daysAdd == 1 ? "" : "s")}.",
+                                Date = addEnd.ToString("dd MMM yyyy"),
+                                DotClass = daysAdd <= 3 ? "dot-warning" : "dot-info"
                             });
 
-                            int daysAdd = (int)(addEnd - DateTime.Now).TotalDays;
-                            if (daysAdd >= 0 && daysAdd <= 30)
-                                list.Add(new AnnouncementItem
-                                {
-                                    Title = "Add Period Ends " + addEnd.ToString("MMM d"),
-                                    Description = daysAdd == 0
-                                        ? "Today is the last day to add courses!"
-                                        : $"Add period closes in {daysAdd} day{(daysAdd == 1 ? "" : "s")}.",
-                                    Date = addEnd.ToString("dd MMM yyyy"),
-                                    DotClass = daysAdd <= 3 ? "dot-warning" : "dot-info"
-                                });
-
-                            int daysDrop = (int)(dropEnd - DateTime.Now).TotalDays;
-                            if (daysDrop >= 0 && daysDrop <= 14)
-                                list.Add(new AnnouncementItem
-                                {
-                                    Title = "Drop Deadline " + dropEnd.ToString("MMM d"),
-                                    Description = "Last day to drop courses without academic penalty.",
-                                    Date = dropEnd.ToString("dd MMM yyyy"),
-                                    DotClass = "dot-warning"
-                                });
-                        }
+                        int daysDrop = (int)(dropEnd - DateTime.Now).TotalDays;
+                        if (daysDrop >= 0 && daysDrop <= 14)
+                            list.Add(new AnnouncementItem
+                            {
+                                Title = "Drop Deadline " + dropEnd.ToString("MMM d"),
+                                Description = "Last day to drop courses without academic penalty.",
+                                Date = dropEnd.ToString("dd MMM yyyy"),
+                                DotClass = "dot-warning"
+                            });
                     }
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Ann-semester: " + ex.Message); }
 
-            try
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("sp_GetStudentInvoices", conn))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand("sp_GetStudentInvoices", conn))
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+                conn.Open();
+                DataTable dt = new DataTable();
+                dt.Load(cmd.ExecuteReader());
+
+                foreach (DataRow row in dt.Rows)
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    conn.Open();
-                    DataTable dt = new DataTable();
-                    dt.Load(cmd.ExecuteReader());
-
-                    foreach (DataRow row in dt.Rows)
+                    string status = row["Status"]?.ToString() ?? "";
+                    if (status == "Issued" || status == "Overdue")
                     {
-                        string status = row["Status"]?.ToString() ?? "";
-                        if (status == "Issued" || status == "Overdue")
-                        {
-                            decimal balance = row["Balance"] == DBNull.Value ? 0
-                                              : Convert.ToDecimal(row["Balance"]);
-                            DateTime due = row["DueDate"] == DBNull.Value ? DateTime.Now
-                                           : Convert.ToDateTime(row["DueDate"]);
-                            int daysLeft = (int)(due - DateTime.Now).TotalDays;
+                        decimal balance = row["Balance"] == DBNull.Value ? 0
+                                            : Convert.ToDecimal(row["Balance"]);
+                        DateTime due = row["DueDate"] == DBNull.Value ? DateTime.Now
+                                        : Convert.ToDateTime(row["DueDate"]);
+                        int daysLeft = (int)(due - DateTime.Now).TotalDays;
 
-                            list.Add(new AnnouncementItem
-                            {
-                                Title = status == "Overdue" ? "⚠ Payment Overdue" : "Payment Deadline Reminder",
-                                Description = $"Tuition balance of RM {balance:N2} due by {due:MMM d}.",
-                                Date = due.ToString("dd MMM yyyy"),
-                                DotClass = (status == "Overdue" || daysLeft <= 3) ? "dot-warning" : "dot-info"
-                            });
-                            break;
-                        }
+                        list.Add(new AnnouncementItem
+                        {
+                            Title = status == "Overdue" ? "⚠ Payment Overdue" : "Payment Deadline Reminder",
+                            Description = $"Tuition balance of RM {balance:N2} due by {due:MMM d}.",
+                            Date = due.ToString("dd MMM yyyy"),
+                            DotClass = (status == "Overdue" || daysLeft <= 3) ? "dot-warning" : "dot-info"
+                        });
+                        break;
                     }
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Ann-payment: " + ex.Message); }
 
             if (list.Count > 3) list = list.GetRange(0, 3);
 
@@ -527,29 +489,22 @@ namespace StudentEnrollmentSystem.Student
             int studentID = Convert.ToInt32(Session["StudentID"]);
             int earned = 0, required = 120;
 
-            try
-            {
-                string sql = @"
-                    SELECT
-                        ISNULL(SUM(c.CreditHours), 0) AS CompletedCredits
-                    FROM Enrollment e
-                    JOIN CourseOffering co ON e.OfferingID = co.OfferingID
-                    JOIN Course c          ON co.CourseID  = c.CourseID
-                    WHERE e.StudentID = @StudentID
-                    AND   e.Status    = 'Enrolled'";
+            string sql = @"
+                SELECT
+                    ISNULL(SUM(c.CreditHours), 0) AS CompletedCredits
+                FROM Enrollment e
+                JOIN CourseOffering co ON e.OfferingID = co.OfferingID
+                JOIN Course c ON co.CourseID = c.CourseID
+                WHERE e.StudentID = @StudentID
+                AND e.Status = 'Enrolled'";
 
-                using (SqlConnection conn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
-                    conn.Open();
-                    object result = cmd.ExecuteScalar();
-                    earned = result == null || result == DBNull.Value ? 0 : Convert.ToInt32(result);
-                }
-            }
-            catch (Exception ex)
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
             {
-                System.Diagnostics.Debug.WriteLine("AcademicProgress: " + ex.Message);
+                cmd.Parameters.Add("@StudentID", SqlDbType.Int).Value = studentID;
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                earned = result == null || result == DBNull.Value ? 0 : Convert.ToInt32(result);
             }
 
             double pct = required > 0 ? Math.Round((double)earned / required * 100, 1) : 0;

@@ -322,7 +322,6 @@
                         <i class="fa fa-bars"></i>
                     </button>
                     <div class="topbar-title">Student Enrollment System</div>
-                    <asp:Label ID="lblDebug" runat="server" ForeColor="Red" Font-Size="Small" />
                     <div></div>
                 </header>
 
