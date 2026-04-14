@@ -106,13 +106,13 @@ namespace StudentEnrollmentSystem.Student
                     gvAvailable.DataBind();
                 }
             }
-            catch (SqlException ex)
+            catch (SqlException)
             {
-                ShowMessage("Database error while loading courses.", true, ex);
+                ShowMessage("Database error while loading courses.", true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ShowMessage("Unexpected system error while loading courses.", true, ex);
+                ShowMessage("Unexpected system error while loading courses.", true);
             }
         }
 
@@ -147,13 +147,13 @@ namespace StudentEnrollmentSystem.Student
                     gvMyCourses.DataBind();
                 }
             }
-            catch (SqlException ex)
+            catch (SqlException)
             {
-                ShowMessage("Database error while loading enrolled courses.", true, ex);
+                ShowMessage("Database error while loading enrolled courses.", true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ShowMessage("Unexpected syste error while loading enrolled courses.", true, ex);
+                ShowMessage("Unexpected syste error while loading enrolled courses.", true);
             }
         }
 
