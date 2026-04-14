@@ -40,8 +40,6 @@ namespace StudentEnrollmentSystem
                 lnkStudent.Attributes["class"] = "nav-link active";
             else if (currentPage.Equals("Report", StringComparison.OrdinalIgnoreCase))
                 lnkReport.Attributes["class"] = "nav-link active";
-            else if (currentPage.Equals("ViewEnquiries", StringComparison.OrdinalIgnoreCase))
-                lnkEnquiry.Attributes["class"] = "nav-link active";
         }
 
         private void ResetMenuLinks()
@@ -52,7 +50,6 @@ namespace StudentEnrollmentSystem
             lnkSemester.Attributes["class"] = "nav-link";
             lnkStudent.Attributes["class"] = "nav-link";
             lnkReport.Attributes["class"] = "nav-link";
-            lnkEnquiry.Attributes["class"] = "nav-link";
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)
