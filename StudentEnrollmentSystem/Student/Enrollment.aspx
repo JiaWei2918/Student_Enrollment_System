@@ -5,11 +5,8 @@
 <style>
     .enroll-wrap { display: flex; flex-direction: column; gap: 28px; }
 
-    .page-header h2 {
-        font-size: 28px; font-weight: 700; color: #0f172a; margin: 0 0 4px;
-    }
-
-    .page-header p { font-size: 14px; color: #64748b; margin: 0; }
+    .page-header h2 { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+    .page-header p  { font-size: 14px; color: #64748b; margin: 0; }
 
     .info-banner {
         background: linear-gradient(135deg, #6366f1, #9333ea);
@@ -17,14 +14,56 @@
         display: flex; align-items: center; gap: 32px; flex-wrap: wrap;
         box-shadow: 0 8px 24px rgba(99,102,241,0.25);
     }
+
     .info-banner-item .ib-label {
         font-size: 11px; color: #c7d2fe; text-transform: uppercase;
         letter-spacing: 0.06em; margin-bottom: 3px;
     }
-    .info-banner-item .ib-value {
-        font-size: 15px; font-weight: 700;
-    }
+
+    .info-banner-item .ib-value { font-size: 15px; font-weight: 700; }
     .ib-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.25); }
+
+    .enroll-notice {
+        padding: 16px 20px; border-radius: 14px;
+        font-size: 14px; line-height: 1.7;
+        display: flex; align-items: flex-start; gap: 14px;
+    }
+
+    .enroll-notice-icon {
+        width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .enroll-notice-icon i { font-size: 18px; color: #fff; }
+    .enroll-notice-title  { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .enroll-notice-body   { font-size: 13px; line-height: 1.6; }
+    .enroll-notice-body a { font-weight: 700; text-decoration: none; }
+
+    .notice-amber {
+        background: #fffbeb; border: 1px solid #fde68a;
+    }
+
+    .notice-amber .enroll-notice-icon { background: linear-gradient(135deg,#f59e0b,#f97316); box-shadow: 0 4px 10px rgba(245,158,11,0.3); }
+    .notice-amber .enroll-notice-title { color: #92400e; }
+    .notice-amber .enroll-notice-body  { color: #b45309; }
+    .notice-amber .enroll-notice-body a{ color: #6366f1; }
+
+    .notice-red {
+        background: #fef2f2; border: 1px solid #fecaca;
+    }
+
+    .notice-red .enroll-notice-icon { background: linear-gradient(135deg,#ef4444,#dc2626); box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
+    .notice-red .enroll-notice-title { color: #991b1b; }
+    .notice-red .enroll-notice-body  { color: #b91c1c; }
+    .notice-red .enroll-notice-body a{ color: #6366f1; }
+
+    .notice-gray {
+        background: #f8fafc; border: 1px solid #e2e8f0;
+    }
+
+    .notice-gray .enroll-notice-icon { background: linear-gradient(135deg,#64748b,#475569); box-shadow: 0 4px 10px rgba(100,116,139,0.3); }
+    .notice-gray .enroll-notice-title { color: #0f172a; }
+    .notice-gray .enroll-notice-body  { color: #64748b; }
 
     .stats-row {
         display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
@@ -50,9 +89,9 @@
 
     .stat-card:hover .stat-icon { transform: scale(1.1); }
     .stat-icon i { font-size: 20px; color: #fff; }
-    .icon-blue   { background: linear-gradient(135deg,#3b82f6,#06b6d4); box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
-    .icon-purple { background: linear-gradient(135deg,#a855f7,#ec4899); box-shadow: 0 4px 10px rgba(168,85,247,0.3); }
-    .icon-emerald{ background: linear-gradient(135deg,#10b981,#14b8a6); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+    .icon-blue    { background: linear-gradient(135deg,#3b82f6,#06b6d4); box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    .icon-purple  { background: linear-gradient(135deg,#a855f7,#ec4899); box-shadow: 0 4px 10px rgba(168,85,247,0.3); }
+    .icon-emerald { background: linear-gradient(135deg,#10b981,#14b8a6); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
 
     .card {
         background: #fff; border-radius: 16px; padding: 28px;
@@ -60,35 +99,7 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     }
 
-    .card-title {
-        font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 20px;
-    }
-
-    .filter-bar {
-        display: grid; grid-template-columns: 1fr auto; gap: 12px;
-        align-items: center; margin-bottom: 20px;
-    }
-
-    .search-wrap { position: relative; }
-
-    .search-wrap i {
-        position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-        color: #94a3b8; font-size: 14px; pointer-events: none;
-    }
-
-    .search-input {
-        width: 100%; padding: 11px 14px 11px 40px;
-        border: 1px solid #e2e8f0; border-radius: 12px;
-        font-size: 14px; background: #f8fafc; color: #0f172a;
-        outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-        box-sizing: border-box;
-    }
-
-    .search-input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-        background: #fff;
-    }
+    .card-title { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 20px; }
 
     .select-all-row {
         display: flex; align-items: center; gap: 10px;
@@ -99,110 +110,7 @@
 
     .select-all-row label { font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; }
 
-    .courses-table { width: 100%; border-collapse: collapse; }
-
-    .courses-table thead tr {
-        background: #f8fafc; border-bottom: 1px solid #e2e8f0;
-    }
-
-    .courses-table thead th {
-        padding: 11px 14px; text-align: left;
-        font-size: 11px; font-weight: 700; color: #64748b;
-        text-transform: uppercase; letter-spacing: 0.06em;
-        white-space: nowrap;
-    }
-
-    .courses-table tbody tr {
-        border-bottom: 1px solid #f1f5f9;
-        transition: background 0.15s;
-    }
-
-    .courses-table tbody tr:hover { background: #fafbff; }
-
-    .courses-table tbody td {
-        padding: 14px; font-size: 14px; color: #334155; vertical-align: middle;
-    }
-
-    .course-code  { font-weight: 700; color: #0f172a; font-size: 14px; }
-    .course-name  { font-size: 12px; color: #64748b; margin-top: 2px; }
-
-    .badge {
-        display: inline-block; padding: 3px 10px;
-        border-radius: 99px; font-size: 11px; font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .badge-blue    { background: #dbeafe; color: #1d4ed8; }
-    .badge-green   { background: #dcfce7; color: #15803d; }
-    .badge-amber   { background: #fef3c7; color: #b45309; }
-    .badge-red     { background: #fee2e2; color: #b91c1c; }
-    .badge-gray    { background: #f1f5f9; color: #475569; }
-
-    .seat-wrap { min-width: 120px; }
-
-    .seat-bar  {
-        width: 100%; height: 6px; background: #f1f5f9;
-        border-radius: 99px; overflow: hidden; margin-top: 5px;
-    }
-
-    .seat-fill { height: 100%; border-radius: 99px; }
-    .seat-text { font-size: 12px; color: #64748b; }
-
-    .row-check { width: 18px; height: 18px; accent-color: #6366f1; cursor: pointer; }
-
-    .row-full td { opacity: 0.55; }
-
-    .enroll-btn-wrap { margin-top: 20px; display: flex; align-items: center; gap: 16px; }
-
-    .btn-enroll {
-        display: inline-flex; align-items: center; gap: 8px;
-        padding: 12px 28px;
-        background: linear-gradient(90deg, #6366f1, #9333ea);
-        color: #fff; border: none; border-radius: 12px;
-        font-size: 14px; font-weight: 600; cursor: pointer;
-        box-shadow: 0 4px 14px rgba(99,102,241,0.35);
-        transition: opacity 0.2s, box-shadow 0.2s;
-    }
-
-    .btn-enroll:hover { opacity: 0.9; box-shadow: 0 8px 22px rgba(99,102,241,0.45); }
-
-    .msg-box {
-        padding: 14px 18px; border-radius: 12px;
-        font-size: 14px; font-weight: 600;
-        display: flex; align-items: center; gap: 10px;
-    }
-
-    .msg-box i { font-size: 16px; }
-    .msg-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-    .msg-error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-
-    .my-courses-table { width: 100%; border-collapse: collapse; }
-
-    .my-courses-table thead tr {
-        background: #f8fafc; border-bottom: 1px solid #e2e8f0;
-    }
-
-    .my-courses-table thead th {
-        padding: 11px 14px; text-align: left;
-        font-size: 11px; font-weight: 700; color: #64748b;
-        text-transform: uppercase; letter-spacing: 0.06em;
-    }
-
-    .my-courses-table tbody tr {
-        border-bottom: 1px solid #f1f5f9;
-        transition: background 0.15s;
-    }
-
-    .my-courses-table tbody tr:hover { background: #fafbff; }
-
-    .my-courses-table tbody td {
-        padding: 14px; font-size: 14px; color: #334155; vertical-align: middle;
-    }
-
-    .my-courses-table .empty-row td {
-        text-align: center; padding: 48px; color: #94a3b8;
-        font-size: 14px;
-    }
+    .select-all-row.disabled { opacity: 0.5; pointer-events: none; }
 
     .gv-available, .gv-mycourses { width: 100%; border-collapse: collapse; }
 
@@ -220,16 +128,68 @@
     }
 
     .gv-available tr:hover td, .gv-mycourses tr:hover td { background: #fafbff; }
+    .gv-available .empty-row td, .gv-mycourses .empty-row td {
+        text-align: center; padding: 48px; color: #94a3b8; font-size: 14px;
+    }
+
+    .course-code { font-weight: 700; color: #0f172a; font-size: 14px; }
+    .course-name { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+    .seat-wrap { min-width: 120px; }
+    .seat-bar  { width: 100%; height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; margin-top: 5px; }
+    .seat-fill { height: 100%; border-radius: 99px; }
+    .seat-text { font-size: 12px; color: #64748b; }
+
+    .badge {
+        display: inline-block; padding: 3px 10px;
+        border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-amber  { background: #fef3c7; color: #b45309; }
+    .badge-red    { background: #fee2e2; color: #b91c1c; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+
+    .row-full td { opacity: 0.55; }
+
+    .enroll-btn-wrap { margin-top: 20px; display: flex; align-items: center; gap: 16px; }
+
+    .btn-enroll {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 28px;
+        background: linear-gradient(90deg, #6366f1, #9333ea);
+        color: #fff; border: none; border-radius: 12px;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+        box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+        transition: opacity 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-enroll:hover:not(:disabled) { opacity: 0.9; box-shadow: 0 8px 22px rgba(99,102,241,0.45); }
+
+    .btn-enroll:disabled {
+        background: #e2e8f0; color: #94a3b8;
+        box-shadow: none; cursor: not-allowed; opacity: 1;
+    }
+
+    .msg-box {
+        padding: 14px 18px; border-radius: 12px;
+        font-size: 14px; font-weight: 600;
+        display: flex; align-items: center; gap: 10px;
+    }
+
+    .msg-box i    { font-size: 16px; }
+    .msg-success  { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .msg-error    { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
 
     @media (max-width: 900px) {
-        .stats-row { grid-template-columns: 1fr 1fr; }
-        .filter-bar { grid-template-columns: 1fr; }
+        .stats-row  { grid-template-columns: 1fr 1fr; }
         .info-banner { gap: 16px; }
     }
 
     @media (max-width: 600px) {
-        .stats-row { grid-template-columns: 1fr; }
-        .ib-divider { display: none; }
+        .stats-row   { grid-template-columns: 1fr; }
+        .ib-divider  { display: none; }
     }
 </style>
 
@@ -261,6 +221,22 @@
             </div>
         </div>
     </div>
+
+    <asp:Panel ID="pnlEnrollNotice" runat="server" Visible="false">
+        <div class="enroll-notice" id="enrollNoticeBox" runat="server">
+            <div class="enroll-notice-icon">
+                <i class="fa" id="enrollNoticeIcon" runat="server"></i>
+            </div>
+            <div>
+                <div class="enroll-notice-title">
+                    <asp:Label ID="lblNoticeTitle" runat="server" />
+                </div>
+                <div class="enroll-notice-body">
+                    <asp:Label ID="lblNoticeBody" runat="server" />
+                </div>
+            </div>
+        </div>
+    </asp:Panel>
 
     <div class="stats-row">
         <div class="stat-card">
@@ -294,7 +270,8 @@
 
     <div class="card">
         <div class="card-title">Available Courses</div>
-        <div class="select-all-row">
+
+        <div class="select-all-row" id="selectAllRow" runat="server">
             <asp:CheckBox ID="chkSelectAll" runat="server"
                 AutoPostBack="true"
                 OnCheckedChanged="chkSelectAll_CheckedChanged" />
@@ -340,7 +317,8 @@
                                     <%# Eval("SeatsLeft") %> of <%# Eval("Capacity") %> seats left
                                 </div>
                                 <div class="seat-bar">
-                                    <div class="seat-fill" style='<%# GetSeatBarStyle(Eval("SeatPct")) %>'></div>
+                                    <div class="seat-fill"
+                                        style='<%# GetSeatBarStyle(Eval("SeatPct")) %>'></div>
                                 </div>
                             </div>
                         </ItemTemplate>
@@ -400,7 +378,6 @@
             </asp:GridView>
         </div>
     </div>
-
 </div>
 
 <script>
@@ -413,9 +390,12 @@
     window.onload = function () {
         var lbl = document.getElementById('<%= lblMessage.ClientID %>');
         if (!lbl || !lbl.innerText.trim()) return;
-        var isError = lbl.style.color === 'red' || lbl.style.color === 'rgb(255, 0, 0)';
+        var isError = lbl.style.color === 'red' ||
+            lbl.style.color === 'rgb(255, 0, 0)' ||
+            lbl.style.color.indexOf('185, 28, 28') > -1;
         lbl.className = 'msg-box ' + (isError ? 'msg-error' : 'msg-success');
-        lbl.innerHTML = '<i class="fa ' + (isError ? 'fa-exclamation-circle' : 'fa-check-circle') + '"></i> ' + lbl.innerText;
+        lbl.innerHTML = '<i class="fa ' + (isError ? 'fa-exclamation-circle' : 'fa-check-circle') +
+            '"></i> ' + lbl.innerText;
     };
 </script>
 </asp:Content>
