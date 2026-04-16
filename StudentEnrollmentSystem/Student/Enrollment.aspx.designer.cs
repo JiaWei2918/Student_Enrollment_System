@@ -42,6 +42,51 @@ namespace StudentEnrollmentSystem.Student
         protected global::System.Web.UI.WebControls.Label lblAddPeriod;
 
         /// <summary>
+        /// pnlEnrollNotice control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlEnrollNotice;
+
+        /// <summary>
+        /// enrollNoticeBox control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl enrollNoticeBox;
+
+        /// <summary>
+        /// enrollNoticeIcon control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl enrollNoticeIcon;
+
+        /// <summary>
+        /// lblNoticeTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNoticeTitle;
+
+        /// <summary>
+        /// lblNoticeBody control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNoticeBody;
+
+        /// <summary>
         /// lblEnrolledCount control.
         /// </summary>
         /// <remarks>
@@ -67,6 +112,15 @@ namespace StudentEnrollmentSystem.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMaxCredits;
+
+        /// <summary>
+        /// selectAllRow control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl selectAllRow;
 
         /// <summary>
         /// chkSelectAll control.
