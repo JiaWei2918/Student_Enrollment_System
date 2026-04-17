@@ -82,7 +82,6 @@ BEGIN TRY
 
     UPDATE Student
     SET FullName = @FullName,
-        Email = @Email,
         Phone = @Phone,
         Program = @Program,
         Section = @Section
