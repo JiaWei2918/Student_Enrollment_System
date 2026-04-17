@@ -344,18 +344,6 @@
                     CssClass="validator-msg" Display="Dynamic" runat="server" />
             </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    Routing Number
-                    <span style="font-weight:400;color:#94a3b8;font-size:12px;margin-left:4px;">(optional)</span>
-                </label>
-                <div class="input-wrap">
-                    <i class="fa fa-hashtag input-icon"></i>
-                    <input type="text" class="form-input" placeholder="9-digit routing number (if applicable)" disabled />
-                </div>
-                <span class="field-hint">9-digit routing number</span>
-            </div>
-
             <div class="form-group" style="justify-content:flex-end;">
                 <label class="form-label">&nbsp;</label>
                 <div class="primary-row">
