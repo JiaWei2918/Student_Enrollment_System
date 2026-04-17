@@ -75,7 +75,6 @@ namespace StudentEnrollmentSystem.Account
 
                     cmd.Parameters.AddWithValue("@StudentID", studentID);
                     cmd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
-                    cmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
 
                     cmd.Parameters.AddWithValue("@Phone",
                         string.IsNullOrEmpty(txtPhone.Text) ? (object)DBNull.Value : txtPhone.Text.Trim());

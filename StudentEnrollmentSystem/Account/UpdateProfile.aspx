@@ -197,7 +197,7 @@
                     <i class="fa fa-envelope input-icon"></i>
                     <asp:TextBox ID="txtEmail" runat="server"
                         CssClass="form-input" MaxLength="100"
-                        placeholder="your@email.com" />
+                        placeholder="your@email.com" ReadOnly="true" />
                 </div>
                 <asp:RequiredFieldValidator
                     ControlToValidate="txtEmail"
